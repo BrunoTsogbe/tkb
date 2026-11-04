@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from typing import Any
 
+from django.urls import reverse
+
 from .models import Dream
 
 # Classifieur local (KAN-19) ; le nom exact sera fixé par le spike KAN-39.
@@ -41,7 +43,7 @@ def dream_to_dict(dream: Dream) -> dict[str, Any]:
     )
     image = (
         {
-            "url": dream.image_file.url,
+            "url": reverse("dreams:image", args=[dream.id]),
             "model": dream.image_model,
             "size": "1024x1024",
             "is_fallback": dream.image_is_fallback,

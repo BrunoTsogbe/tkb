@@ -5,6 +5,14 @@ from __future__ import annotations
 from django import forms
 
 from .audio import AudioInfo, validate_audio
+from .models import Emotion
+
+
+class DreamEditForm(forms.Form):
+    """Correction de la transcription et de l'ambiance par l'utilisateur."""
+
+    transcript = forms.CharField(label="Transcription", widget=forms.Textarea(attrs={"rows": 5}), max_length=20000)
+    emotion = forms.ModelChoiceField(label="Ambiance", queryset=Emotion.objects.all(), to_field_name="id")
 
 
 class AudioUploadForm(forms.Form):

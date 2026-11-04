@@ -40,7 +40,7 @@ def test_upload_creates_received_dream_with_random_file_name(
     client_logged: Client, user: User, audio_file: Upload
 ) -> None:
     """Étant donné un fichier valide, alors un rêve « received » est créé sous un nom aléatoire."""
-    response = client_logged.post(reverse("dreams:create"), {"audio": audio_file("mon-reve-intime.wav")})
+    response = client_logged.post(reverse("dreams:collection"), {"audio": audio_file("mon-reve-intime.wav")})
     dream = Dream.objects.get()
     assert response.status_code == 302 and response.url == reverse("dreams:detail", args=[dream.id])
     assert dream.user == user and dream.status == Dream.Status.RECEIVED
@@ -53,7 +53,7 @@ def test_upload_creates_received_dream_with_random_file_name(
 def test_recorder_upload_returns_json_202(client_logged: Client, audio_file: Upload) -> None:
     """L'enregistreur du navigateur (WebM) reçoit un 202 et l'URL de suivi."""
     response = client_logged.post(
-        reverse("dreams:create"), {"audio": audio_file("enregistrement.webm", WEBM)}, HTTP_ACCEPT="application/json"
+        reverse("dreams:collection"), {"audio": audio_file("enregistrement.webm", WEBM)}, HTTP_ACCEPT="application/json"
     )
     assert response.status_code == 202
     assert response.json()["redirect"].startswith("/dreams/")
@@ -61,7 +61,7 @@ def test_recorder_upload_returns_json_202(client_logged: Client, audio_file: Upl
 
 def test_invalid_file_is_rejected_and_nothing_is_stored(client_logged: Client, audio_file: Upload) -> None:
     """Étant donné un fichier invalide, alors un message précis s'affiche et rien n'est stocké."""
-    response = client_logged.post(reverse("dreams:create"), {"audio": audio_file("reve.mp3", b"texte" * 10)})
+    response = client_logged.post(reverse("dreams:collection"), {"audio": audio_file("reve.mp3", b"texte" * 10)})
     assert response.status_code == 400
     assert "ne correspond pas" in response.content.decode()
     assert not Dream.objects.exists()
@@ -72,7 +72,7 @@ def test_upload_requires_consent(audio_file: Upload) -> None:
     client = Client()
     client.force_login(UserFactory(consent=False))
     assert "J'accepte et je commence" in client.get(reverse("dreams:record")).content.decode()
-    response = client.post(reverse("dreams:create"), {"audio": audio_file()}, HTTP_ACCEPT="application/json")
+    response = client.post(reverse("dreams:collection"), {"audio": audio_file()}, HTTP_ACCEPT="application/json")
     assert response.status_code == 403
     assert not Dream.objects.exists()
 
@@ -80,9 +80,9 @@ def test_upload_requires_consent(audio_file: Upload) -> None:
 def test_daily_quota_is_enforced(client_logged: Client, user: User, audio_file: Upload) -> None:
     """Au-delà de 5 rêves en 24 h, le dépôt est refusé (429) avec un message clair."""
     for _ in range(5):
-        assert client_logged.post(reverse("dreams:create"), {"audio": audio_file()}).status_code == 302
+        assert client_logged.post(reverse("dreams:collection"), {"audio": audio_file()}).status_code == 302
     assert quota_for(user).exhausted
-    response = client_logged.post(reverse("dreams:create"), {"audio": audio_file()})
+    response = client_logged.post(reverse("dreams:collection"), {"audio": audio_file()})
     assert response.status_code == 429
     assert "Revenez demain" in response.content.decode()
     assert Dream.objects.count() == 5
@@ -91,7 +91,7 @@ def test_daily_quota_is_enforced(client_logged: Client, user: User, audio_file: 
 def test_pages_require_login(client: Client) -> None:
     """Toutes les pages de rêves exigent une session."""
     assert client.get(reverse("dreams:record")).status_code == 302
-    assert client.post(reverse("dreams:create")).status_code == 302
+    assert client.post(reverse("dreams:collection")).status_code == 302
 
 
 def test_detail_of_another_users_dream_is_404(client_logged: Client) -> None:
@@ -101,10 +101,10 @@ def test_detail_of_another_users_dream_is_404(client_logged: Client) -> None:
 
 
 def test_detail_shows_received_status(client_logged: Client, user: User) -> None:
-    """La page de suivi affiche l'état du rêve."""
+    """La page de suivi d'un rêve reçu s'actualise et rassure l'utilisateur."""
     dream = Dream.objects.create(user=user, audio_duration_s=42)
     page = client_logged.get(reverse("dreams:detail", args=[dream.id])).content.decode()
-    assert "bien reçu" in page and "42 s" in page
+    assert 'data-finished="0"' in page and "prend forme" in page and "js/status.js" in page
 
 
 def test_for_user_isolates_dreams(user: User) -> None:
@@ -116,7 +116,7 @@ def test_for_user_isolates_dreams(user: User) -> None:
 
 def test_delete_audio_keeps_proof_of_deletion(client_logged: Client, audio_file: Upload) -> None:
     """La suppression de l'audio efface le fichier et horodate l'opération (RGPD)."""
-    client_logged.post(reverse("dreams:create"), {"audio": audio_file()})
+    client_logged.post(reverse("dreams:collection"), {"audio": audio_file()})
     dream = Dream.objects.get()
     path = Path(dream.audio_file.path)
     dream.delete_audio()

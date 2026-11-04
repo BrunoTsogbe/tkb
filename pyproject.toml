@@ -12,6 +12,7 @@ convention = "google"
 [tool.ruff.lint.per-file-ignores]
 "maquette/tests/*" = ["D106"]
 "app/**" = ["D104", "D105", "D106", "D107"]
+"app/tests/*" = ["D102", "D103", "D104", "D105", "D106", "D107"]
 "app/config/settings/*" = ["F405"]
 "maquette/theme.py" = ["E501"]  # feuille CSS embarquée
 

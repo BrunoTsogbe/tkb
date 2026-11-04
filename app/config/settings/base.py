@@ -110,6 +110,26 @@ DAILY_DREAM_LIMIT = env.int("DAILY_DREAM_LIMIT", default=5)
 CONSENT_VERSION = "1.0"
 API_BUDGET_EUR = env.float("API_BUDGET_EUR", default=20.0)
 
+# Fournisseurs d'IA (KAN-21) : « fake » par défaut, aucun appel payant sans configuration explicite.
+AI_STT_PROVIDER = env("AI_STT_PROVIDER", default="fake")
+AI_IMAGE_PROVIDER = env("AI_IMAGE_PROVIDER", default="fake")
+AI_EMOTION_PROVIDER = env("AI_EMOTION_PROVIDER", default="keywords")
+OPENAI_API_KEY = env("OPENAI_API_KEY", default="")
+OPENAI_BASE_URL = env("OPENAI_BASE_URL", default="https://api.openai.com/v1")
+OPENAI_STT_MODEL = env("OPENAI_STT_MODEL", default="gpt-transcribe")
+OPENAI_IMAGE_MODEL = env("OPENAI_IMAGE_MODEL", default="gpt-image-1-mini")
+EMOTION_HF_MODEL = env("EMOTION_HF_MODEL", default="MoritzLaurer/mDeBERTa-v3-base-xnli-multilingual-nli-2mil7")
+AI_STT_TIMEOUT_S = env.float("AI_STT_TIMEOUT_S", default=60.0)
+AI_IMAGE_TIMEOUT_S = env.float("AI_IMAGE_TIMEOUT_S", default=90.0)
+AI_STT_RETRIES = env.int("AI_STT_RETRIES", default=2)
+AI_IMAGE_RETRIES = env.int("AI_IMAGE_RETRIES", default=1)
+AI_BACKOFF_S = env.float("AI_BACKOFF_S", default=2.0)
+
+# Grille tarifaire (benchmark.xlsx, novembre 2026).
+STT_USD_PER_MIN = env.float("STT_USD_PER_MIN", default=0.0045)
+IMAGE_USD = env.float("IMAGE_USD", default=0.011)
+EUR_PER_USD = env.float("EUR_PER_USD", default=0.92)
+
 # Celery (KAN-22) : exécution synchrone tant que le worker n'est pas activé.
 CELERY_BROKER_URL = env("CELERY_BROKER_URL", default="redis://localhost:6379/0")
 CELERY_TASK_ALWAYS_EAGER = env.bool("CELERY_TASK_ALWAYS_EAGER", default=True)

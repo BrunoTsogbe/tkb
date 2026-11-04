@@ -35,7 +35,20 @@ Règles de contribution (branches, PR, définition de terminé) : `CONTRIBUTING.
 | KAN-17 Enregistrement micro (MediaRecorder) et import, validation par signature, quota | ✅ |
 | KAN-36 (avance) Consentement IA à l'inscription, retrait possible | ✅ |
 
-39 tests dédiés à l'application (97 % de couverture de `app/`), 83 tests au total.
+| Sprint 2 | État |
+|---|---|
+| KAN-21 Interfaces fournisseurs, délais, relances, `Retry-After`, coupe-circuit, journal des coûts | ✅ `app/ai/` |
+| KAN-18 Transcription OpenAI `gpt-transcribe`, audio supprimé ensuite, texte corrigeable | ✅ |
+| KAN-19 Ambiance locale (mots-clés, option Hugging Face zero-shot), corrigeable | ✅ |
+| KAN-20 Image OpenAI `gpt-image-1-mini`, prompt minimisé, image de secours, garde-fou budget | ✅ |
+| KAN-14 Historique paginé, isolé par utilisateur, image servie au seul propriétaire | ✅ |
+| Pipeline idempotent + tâche Celery, suivi en direct, « Réessayer » (avance sur KAN-22) | ✅ |
+| KAN-39 Spike : latences réelles, DPA, modèle d'émotion | ⏳ nécessite tes clés API |
+
+Par défaut, les fournisseurs sont simulés (`AI_STT_PROVIDER=fake`) : aucune clé, aucun coût. Pour les vrais
+appels, renseigner `OPENAI_API_KEY` et passer `AI_STT_PROVIDER` / `AI_IMAGE_PROVIDER` à `openai`.
+
+89 tests dédiés à l'application (99 % de couverture de `app/`), 133 tests au total.
 
 ## Livrables de pré-production
 

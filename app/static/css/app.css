@@ -53,4 +53,22 @@ input:focus-visible, button:focus-visible, a:focus-visible { outline: 3px solid 
 .steps li { padding: .3rem .8rem; border-radius: 999px; border: 1px solid var(--border); color: var(--muted); font-size: .9rem; }
 .steps li.done { color: var(--ink); border-color: var(--violet); } .steps li.current { color: #fff; background: rgba(167, 139, 250, .25); }
 .footer { text-align: center; color: var(--muted); font-size: .8rem; padding: 1.5rem 1rem; }
+.steps li.failed { color: var(--error); border-color: var(--error); }
+.transcript-preview { font-style: italic; color: var(--muted); }
+.result { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: 1.5rem; align-items: start; margin: 1rem 0; }
+.result-image { margin: 0; } .result-image img { width: 100%; height: auto; border-radius: var(--radius); box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 55%, transparent), 0 0 50px color-mix(in srgb, var(--accent) 35%, transparent); }
+.result-image figcaption { color: var(--muted); font-size: .85rem; margin-top: .4rem; }
+.badge { display: inline-block; padding: .4rem 1rem; border-radius: 999px; font-weight: 700; background: color-mix(in srgb, var(--accent) 45%, transparent); }
+.bars { list-style: none; padding: 0; display: grid; gap: .35rem; font-size: .9rem; color: var(--muted); }
+.bars li { display: grid; grid-template-columns: 8rem 1fr 3rem; gap: .6rem; align-items: center; } .bars meter { width: 100%; }
+textarea, select { width: 100%; padding: .7rem .8rem; border-radius: 10px; border: 1px solid var(--border); background: rgba(0, 0, 0, .25); color: var(--ink); font: inherit; }
+.gallery { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; }
+.dream-card { margin: 0; padding: 1rem; } .dream-card a { display: flex; gap: .9rem; color: var(--ink); text-decoration: none; }
+.dream-card img, .thumb { width: 96px; height: 96px; border-radius: 12px; flex: none; object-fit: cover; }
+.thumb { display: grid; place-items: center; background: rgba(167, 139, 250, .12); font-size: 2rem; }
+.meta { display: grid; gap: .3rem; align-content: start; font-size: .9rem; } .meta time { color: var(--muted); }
+.chip[style] { background: color-mix(in srgb, var(--accent) 35%, transparent); color: var(--ink); }
+.excerpt { line-height: 1.4; }
+.pagination { display: flex; gap: 1rem; justify-content: center; align-items: center; margin: 1.5rem 0; }
+@media (max-width: 720px) { .result { grid-template-columns: 1fr; } }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }

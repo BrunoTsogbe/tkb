@@ -23,7 +23,7 @@
 {% elif quota.exhausted %}
   <section class="card narrow center"><p>Vous avez atteint votre limite de rêves pour aujourd'hui. Revenez demain !</p></section>
 {% else %}
-  <section class="card recorder" data-recorder data-upload-url="{% url 'dreams:create' %}">
+  <section class="card recorder" data-recorder data-upload-url="{% url 'dreams:collection' %}">
     <button type="button" class="mic" data-mic aria-pressed="false" aria-label="Commencer l'enregistrement">
       <span aria-hidden="true">🎙️</span>
     </button>
@@ -34,7 +34,7 @@
 
   <p class="center muted">ou</p>
 
-  <form class="card narrow" method="post" action="{% url 'dreams:create' %}" enctype="multipart/form-data">
+  <form class="card narrow" method="post" action="{% url 'dreams:collection' %}" enctype="multipart/form-data">
     {% csrf_token %}
     <div class="field{% if form.audio.errors %} has-error{% endif %}">
       <label for="id_audio">Importer un fichier .wav, .mp3 ou .webm (25 Mo, 10 minutes maximum)</label>

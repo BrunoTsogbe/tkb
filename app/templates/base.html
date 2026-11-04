@@ -13,6 +13,7 @@
     <nav aria-label="Navigation principale">
       {% if user.is_authenticated %}
         <a href="{% url 'dreams:record' %}" {% if request.resolver_match.url_name == 'record' %}aria-current="page"{% endif %}>Raconter</a>
+        <a href="{% url 'dreams:collection' %}" {% if request.resolver_match.url_name in 'collection detail' %}aria-current="page"{% endif %}>Historique</a>
         <form method="post" action="{% url 'accounts:logout' %}" class="inline">{% csrf_token %}<button class="link">Se déconnecter</button></form>
       {% else %}
         <a href="{% url 'accounts:login' %}">Se connecter</a>
