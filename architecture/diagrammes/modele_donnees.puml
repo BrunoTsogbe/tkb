@@ -1,0 +1,62 @@
+@startuml modele_donnees
+title Synthétiseur de rêves – modèle de données
+hide circle
+skinparam linetype ortho
+
+entity User {
+  * id : bigint <<PK>>
+  --
+  * email : varchar(254) <<UQ>>
+  * password : hash Argon2
+  is_active : bool
+  date_joined : timestamptz
+}
+entity Profile {
+  * id : bigint <<PK>>
+  --
+  * user_id : bigint <<FK, UQ>>
+  ai_consent_at : timestamptz
+  consent_version : varchar(10)
+  daily_dream_limit : smallint
+  timezone : varchar(40)
+}
+entity Dream {
+  * id : uuid <<PK>>
+  --
+  * user_id : bigint <<FK>>
+  * status : enum
+  created_at, updated_at : timestamptz
+  audio_file, audio_format, audio_duration_s, audio_deleted_at
+  transcript : text
+  transcript_model, transcript_edited
+  emotion_id : smallint <<FK>>
+  emotion_scores : jsonb
+  emotion_corrected : bool
+  image_file, image_prompt, image_is_fallback
+  error_code, error_step
+  processing_ms : integer
+  cost_eur : numeric(8,5)
+}
+entity Emotion {
+  * id : smallint <<PK>>
+  --
+  * key : varchar(20) <<UQ>>
+  label, icon, color
+}
+entity APICallLog {
+  * id : bigint <<PK>>
+  --
+  dream_id : uuid <<FK>>
+  * user_id : bigint <<FK>>
+  kind, provider, model, status
+  http_status, attempt, latency_ms
+  units, cost_usd, cost_eur
+  error_code, created_at
+}
+
+User ||--|| Profile
+User ||--o{ Dream
+Emotion |o--o{ Dream
+Dream |o--o{ APICallLog
+User ||--o{ APICallLog
+@enduml

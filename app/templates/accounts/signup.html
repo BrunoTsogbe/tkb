@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Créer un compte · Synthétiseur de rêves{% endblock %}
+{% block content %}
+<section class="card narrow">
+  <h1>Créer mon compte</h1>
+  <p class="muted">Vos rêves restent privés : vous seul y avez accès.</p>
+  <form method="post" novalidate>
+    {% csrf_token %}
+    {% include "partials/form_errors.html" %}
+    {% include "partials/field.html" with field=form.email %}
+    {% include "partials/field.html" with field=form.password1 %}
+    {% include "partials/field.html" with field=form.password2 %}
+    <div class="check">
+      {{ form.ai_consent }} <label for="{{ form.ai_consent.id_for_label }}">{{ form.ai_consent.label }}</label>
+      <p class="help">{{ form.ai_consent.help_text }}</p>
+    </div>
+    <div class="check">
+      {{ form.terms }} <label for="{{ form.terms.id_for_label }}">{{ form.terms.label }}</label>
+      {% for error in form.terms.errors %}<p class="error">{{ error }}</p>{% endfor %}
+    </div>
+    <button class="btn btn-primary wide" type="submit">Créer mon compte</button>
+  </form>
+  <p class="center">Déjà un compte ? <a href="{% url 'accounts:login' %}">Se connecter</a></p>
+</section>
+{% endblock %}

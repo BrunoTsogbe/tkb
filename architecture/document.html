@@ -1,0 +1,408 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Synthétiseur de rêves – Spécifications et architecture</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+@page { size: A4; margin: 13mm 14mm 15mm; }
+@page { @bottom-left { content: "Synthétiseur de rêves · Spécifications et architecture"; font: 7.5pt Inter, sans-serif; color: #94a3b8; }
+        @bottom-right { content: counter(page) " / " counter(pages); font: 7.5pt Inter, sans-serif; color: #94a3b8; } }
+@page :first { @bottom-left { content: none; } @bottom-right { content: none; } }
+:root { --violet: #6d28d9; --violet-2: #7c3aed; --ink: #0f172a; --muted: #64748b; --line: #e2e8f0; --soft: #f5f3ff; }
+* { box-sizing: border-box; }
+html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+body { margin: 0; font: 8.9pt/1.42 Inter, "Segoe UI", sans-serif; color: var(--ink); }
+h1, h2, h3 { font-family: Fraunces, Georgia, serif; color: var(--ink); margin: 0; }
+h2 { font-size: 16pt; margin: 5mm 0 2mm; display: flex; align-items: baseline; gap: 3mm; }
+h2 .num { color: var(--violet-2); font-size: 13pt; }
+h3 { font-size: 11pt; margin: 3.5mm 0 1.5mm; break-after: avoid; color: #3b0764; }
+p { margin: 0 0 2mm; }
+.lead { color: #334155; font-size: 9.6pt; }
+.page-break { break-before: page; }
+.avoid { break-inside: avoid; }
+figure { margin: 2mm 0 3mm; break-inside: avoid; }
+figure svg { width: 100%; height: auto; display: block; }
+.fig-seq svg { width: 80%; margin: 0 auto; }
+.fig-erd svg { width: 94%; margin: 0 auto; }
+figcaption { font-size: 8pt; color: var(--muted); margin-top: 1.2mm; text-align: center; }
+table { width: 100%; border-collapse: collapse; margin: 1.2mm 0 2.5mm; font-size: 7.9pt; break-inside: auto; }
+thead { display: table-header-group; }
+tr { break-inside: avoid; }
+th { background: var(--soft); color: #3b0764; text-align: left; font-weight: 600; padding: 1.2mm 1.8mm; border-bottom: 1.4px solid #c4b5fd; }
+td { padding: 1.05mm 1.8mm; border-bottom: 1px solid var(--line); vertical-align: top; }
+td code, p code, li code { font: 7.8pt "JetBrains Mono", Consolas, monospace; background: #f1f5f9; padding: .2mm 1mm; border-radius: 1mm; }
+pre { font: 7.4pt/1.4 "JetBrains Mono", Consolas, monospace; background: #0f172a; color: #e2e8f0; padding: 3mm 3.5mm; border-radius: 2.5mm; margin: 1.5mm 0 3mm; white-space: pre-wrap; break-inside: avoid; }
+pre .k { color: #c4b5fd; } pre .s { color: #86efac; } pre .c { color: #94a3b8; }
+ul { margin: 0 0 2mm; padding-left: 4.5mm; } li { margin: .6mm 0; }
+.tag { display: inline-block; font-size: 7.2pt; font-weight: 600; padding: .3mm 1.6mm; border-radius: 9mm; background: #fef3c7; color: #92400e; white-space: nowrap; }
+.tag.ok { background: #dcfce7; color: #166534; } .tag.v { background: #ede9fe; color: #5b21b6; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 4mm; }
+.grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3mm; }
+.card { border: 1px solid #ddd6fe; background: #fff; border-radius: 3mm; padding: 3mm 3.4mm; break-inside: avoid; }
+.card b { display: block; color: #3b0764; margin-bottom: .8mm; font-size: 9.3pt; }
+.card p { margin: 0; font-size: 8.4pt; color: #334155; }
+.callout { border-left: 3px solid var(--violet-2); background: var(--soft); padding: 2.2mm 3.5mm; border-radius: 0 2mm 2mm 0; margin: 2mm 0 3mm; font-size: 8.6pt; }
+.callout.warn { border-color: #f59e0b; background: #fffbeb; }
+
+/* Couverture */
+.cover { height: 268mm; display: flex; flex-direction: column; position: relative; overflow: hidden; border-radius: 5mm;
+  background: radial-gradient(120mm 80mm at 15% 0%, rgba(124,58,237,.55), transparent 70%),
+              radial-gradient(110mm 90mm at 100% 10%, rgba(219,39,119,.35), transparent 70%),
+              radial-gradient(140mm 90mm at 50% 115%, rgba(34,211,238,.28), transparent 70%), #070718;
+  color: #ece9ff; padding: 16mm 15mm 12mm; }
+.cover .stars { position: absolute; inset: 0; background-image:
+  radial-gradient(1.2px 1.2px at 12% 18%, #fff, transparent), radial-gradient(1px 1px at 34% 62%, #fff, transparent),
+  radial-gradient(1.4px 1.4px at 71% 28%, #fff, transparent), radial-gradient(1px 1px at 88% 74%, #fff, transparent),
+  radial-gradient(1.2px 1.2px at 52% 8%, #fff, transparent), radial-gradient(1px 1px at 22% 88%, #fff, transparent),
+  radial-gradient(1.3px 1.3px at 64% 92%, #fff, transparent), radial-gradient(1px 1px at 93% 41%, #fff, transparent);
+  background-size: 60mm 60mm; opacity: .8; }
+.cover > * { position: relative; }
+.moon { width: 20mm; height: 20mm; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #fffbe8, #f5e7b8 55%, #d8c48a);
+  box-shadow: 0 0 12mm 2mm rgba(253,230,138,.35), 0 0 30mm 8mm rgba(167,139,250,.25); margin-bottom: 10mm; }
+.cover .kicker { text-transform: uppercase; letter-spacing: .22em; font-size: 8pt; color: #c4b5fd; margin-bottom: 4mm; }
+.cover h1 { color: #fff; font-size: 34pt; line-height: 1.02; margin-bottom: 4mm; }
+.cover h1 span { background: linear-gradient(100deg, #fff 10%, #a78bfa 45%, #f472b6 80%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.cover .sub { font-size: 12pt; color: #ddd6fe; max-width: 140mm; }
+.cover .meta { margin-top: auto; display: grid; grid-template-columns: repeat(4, 1fr); gap: 3mm; }
+.cover .meta div { border: 1px solid rgba(196,181,253,.25); background: rgba(255,255,255,.05); border-radius: 3mm; padding: 2.5mm 3mm; font-size: 8.3pt; }
+.cover .meta span { display: block; text-transform: uppercase; letter-spacing: .1em; font-size: 6.6pt; color: #a7a3c9; margin-bottom: .6mm; }
+.cover .toc { margin: 9mm 0 0; display: grid; grid-template-columns: 1fr 1fr; gap: 1.5mm 8mm; font-size: 9.5pt; max-width: 150mm; }
+.cover .toc div { border-bottom: 1px dashed rgba(196,181,253,.25); padding-bottom: 1mm; color: #ece9ff; }
+.cover .toc b { color: #f9a8d4; margin-right: 2mm; }
+
+.decisions { display: grid; grid-template-columns: 1fr 1fr; gap: 3mm; margin-top: 3mm; }
+.decision { border-radius: 3mm; padding: 3mm 3.5mm; background: linear-gradient(135deg, #faf5ff, #fff); border: 1px solid #e9d5ff; break-inside: avoid; }
+.decision b { display: flex; gap: 2mm; align-items: center; color: #3b0764; font-size: 9.4pt; margin-bottom: 1mm; }
+.decision b i { font-style: normal; width: 6mm; height: 6mm; border-radius: 50%; background: var(--violet-2); color: #fff; display: inline-grid; place-items: center; font-size: 8pt; }
+.decision p { margin: 0; font-size: 8.4pt; color: #334155; }
+
+.latency { display: flex; height: 9mm; border-radius: 2mm; overflow: hidden; margin: 2mm 0 1mm; font-size: 7.4pt; color: #fff; font-weight: 600; }
+.latency div { display: grid; place-items: center; text-align: center; line-height: 1.1; }
+.legend-note { font-size: 7.8pt; color: var(--muted); }
+.states { display: flex; align-items: center; gap: 1.5mm; flex-wrap: wrap; margin: 1.5mm 0 3mm; font-size: 8pt; }
+.states span { padding: 1mm 2.4mm; border-radius: 9mm; background: #ede9fe; color: #4c1d95; font-weight: 600; }
+.states span.end { background: #dcfce7; color: #166534; } .states span.err { background: #fee2e2; color: #991b1b; }
+.states em { color: #94a3b8; font-style: normal; }
+</style>
+</head>
+<body>
+
+<!-- ============ COUVERTURE ============ -->
+<section class="cover">
+  <div class="stars"></div>
+  <div class="moon"></div>
+  <div class="kicker">Dossier de pré-production · Livrable 5.2 · Compétence C1-3</div>
+  <h1><span>Synthétiseur de rêves</span><br>Spécifications &amp; architecture</h1>
+  <p class="sub">Architecture cible sécurisée et scalable de l'application web qui transforme un rêve raconté à voix haute en texte, en émotion et en image, puis l'archive dans un espace personnel.</p>
+  <div class="toc">
+    <div><b>1</b>Diagrammes C4 · contexte et conteneurs</div>
+    <div><b>2</b>Modèle de données · ERD, dictionnaire, JSON</div>
+    <div><b>3</b>Séquence clé · traitement d'un rêve</div>
+    <div><b>4</b>APIs · choix argumenté et API interne</div>
+    <div><b>5</b>Exigences · performance, SLO, budget</div>
+    <div><b>6</b>Justification technologique · libs, CI/CD, monitoring</div>
+    <div><b>7</b>Traçabilité et points à valider</div>
+  </div>
+  <div class="meta">
+    <div><span>Auteur</span>Bruno Tsogbe</div>
+    <div><span>Version · date</span>1.0 · 4 novembre 2026</div>
+    <div><span>Documents liés</span>dossier_cadrage.pdf · benchmark.xlsx</div>
+    <div><span>Sources</span>architecture/ · maquette/</div>
+  </div>
+</section>
+
+<!-- ============ SYNTHÈSE ============ -->
+<section class="page-break">
+  <h2>L'architecture en une page</h2>
+  <p class="lead">Un développeur seul, quatre sprints d'une semaine, un budget d'API de 20 € : l'architecture privilégie la simplicité d'exploitation, sans sacrifier la robustesse là où le sujet l'exige (APIs externes, données intimes, coûts). Chaque décision ci-dessous est reprise et justifiée dans le document.</p>
+  <div class="decisions">
+    <div class="decision"><b><i>1</i>Monolithe Django modulaire + worker</b><p>Une seule base de code (apps <code>accounts</code>, <code>dreams</code>, <code>ai</code>, <code>dashboard</code>) déployée en deux processus. Le traitement long (≈ 30 s) sort de la requête HTTP : l'interface reste fluide et les relances ne bloquent personne.</p></div>
+    <div class="decision"><b><i>2</i>Fournisseurs IA interchangeables</b><p>Transcription, émotion et image passent par trois interfaces Python (KAN-21). OpenAI est le choix par défaut ; Deepgram ou AssemblyAI prennent le relais par simple configuration, sans toucher au métier.</p></div>
+    <div class="decision"><b><i>3</i>Émotion calculée en local</b><p>Modèle Hugging Face exécuté dans le worker : coût nul, aucun texte transmis à un tiers. Le classifieur par mots-clés de la maquette reste disponible comme repli si le modèle ne se charge pas.</p></div>
+    <div class="decision"><b><i>4</i>Budget piloté par la donnée</b><p>Chaque appel externe est journalisé (<code>APICallLog</code>) avec sa durée et son coût. Trois seuils (80 %, 95 %, 100 % des 20 €) déclenchent alerte, mode dégradé puis arrêt des appels payants.</p></div>
+    <div class="decision"><b><i>5</i>Données intimes protégées par conception</b><p>Audio supprimé dès la transcription, rêves filtrés par utilisateur dans chaque requête, prompt d'image minimisé, logs et traces sans contenu de rêve, secrets hors du code.</p></div>
+    <div class="decision"><b><i>6</i>Livraison continue et repli local</b><p>GitHub Actions : lint, tests (≥ 70 %), image Docker, déploiement Render. La même image tourne en local avec <code>docker compose up</code> si l'hébergement échoue (risque R9).</p></div>
+  </div>
+  <div class="callout warn" style="margin-top:4mm"><b>Convention.</b> Les valeurs marquées <span class="tag">à mesurer</span> ou <span class="tag">à valider</span> sont des objectifs ou des hypothèses : elles seront confirmées par <code>benchmark_latency.py</code>, par les tests du Sprint 2 ou par la lecture des pages officielles des fournisseurs. Les prix sont ceux de <code>benchmark.xlsx</code> (novembre 2026).</div>
+
+  <h2><span class="num">1</span>Diagrammes C4</h2>
+  <h3>1.1 Contexte · qui utilise le système et de quoi il dépend</h3>
+  <figure>{{c4_contexte}}<figcaption>Figure 1 – Niveau 1 (contexte). Les flèches indiquent le sens de l'initiative ; aucun système externe n'appelle l'application.</figcaption></figure>
+</section>
+
+<section>
+  <table class="avoid">
+    <thead><tr><th style="width:19%">Système externe</th><th style="width:30%">Rôle</th><th>Données transmises</th><th style="width:22%">Cadre contractuel / RGPD</th></tr></thead>
+    <tbody>
+      <tr><td><b>OpenAI API</b></td><td>Transcription (<code>gpt-transcribe</code>) et génération d'image (<code>GPT Image 1 Mini</code>)</td><td>Audio du rêve (supprimé de notre côté après transcription) ; prompt d'image sans nom propre</td><td>DPA nécessaire, non-entraînement API, transfert hors UE <span class="tag">à confirmer</span></td></tr>
+      <tr><td><b>STT de secours</b></td><td>Bascule si OpenAI est indisponible ou retire son modèle (R4)</td><td>Audio, uniquement en cas de bascule</td><td>DPA, endpoint UE <span class="tag">à confirmer</span></td></tr>
+      <tr><td><b>Sentry</b></td><td>Erreurs et traces de performance (web + worker)</td><td>Pile d'appels, identifiants techniques ; <code>send_default_pii=False</code>, filtrage du contenu</td><td>Offre gratuite, région UE sélectionnable</td></tr>
+      <tr><td><b>Hugging Face Hub</b></td><td>Fournit le modèle d'émotion, téléchargé à la construction de l'image Docker</td><td>Aucune donnée utilisateur</td><td>Licence du modèle à vérifier</td></tr>
+      <tr><td><b>Service d'e-mail</b></td><td>Réinitialisation du mot de passe, alerte budget à l'administrateur</td><td>Adresse e-mail, lien signé à durée limitée</td><td>Prestataire européen privilégié</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h3>1.2 Conteneurs · ce qui s'exécute et comment ça communique</h3>
+  <figure>{{c4_conteneurs}}<figcaption>Figure 2 – Niveau 2 (conteneurs). Deux processus applicatifs partagent la même image Docker : <code>gunicorn</code> (web) et <code>celery worker</code>.</figcaption></figure>
+  <table>
+    <thead><tr><th style="width:17%">Conteneur</th><th style="width:21%">Technologie</th><th>Responsabilités</th><th style="width:25%">Montée en charge</th></tr></thead>
+    <tbody>
+      <tr><td><b>Interface web</b></td><td>Gabarits Django, HTMX, Tailwind CSS, JS natif</td><td>Enregistrement micro (<code>MediaRecorder</code>, WebM/Opus) ou upload .wav/.mp3, suivi en direct par polling HTMX, tableau de bord. Rendu serveur : pas de SPA à maintenir.</td><td>Ressources statiques servies par WhiteNoise, cache navigateur</td></tr>
+      <tr><td><b>Application web</b></td><td>Django 5.2 LTS, Gunicorn</td><td>Authentification, validation et dépôt de l'audio, contrôle quota/budget, historique paginé, filtres, édition, suppression, export, admin, <code>/healthz</code>.</td><td>Sans état : instances ajoutées horizontalement</td></tr>
+      <tr><td><b>Worker IA</b></td><td>Celery 5, Python 3.12, transformers (CPU)</td><td>Pipeline d'un rêve, relances, coupe-circuit, calcul et journalisation des coûts, suppression de l'audio, e-mails asynchrones.</td><td>Concurrence réglable (<code>-c</code>), file dédiée <code>ai</code>, 1 Go de RAM pour le modèle</td></tr>
+      <tr><td><b>File de tâches</b></td><td>Redis 7</td><td>Broker Celery, compteurs de quotas (fenêtre glissante), cache du budget consommé.</td><td>Instance managée</td></tr>
+      <tr><td><b>Base de données</b></td><td>PostgreSQL 16</td><td>Source de vérité : utilisateurs, rêves, émotions, journal des appels. JSONB pour les scores d'émotion.</td><td>Index ciblés (§2), sauvegardes managées</td></tr>
+      <tr><td><b>Stockage médias</b></td><td>Volume disque ; S3 compatible via <code>django-storages</code></td><td>Audio (durée de vie : le temps de la transcription), images générées. Noms de fichiers aléatoires (UUID).</td><td>Bascule S3 sans changer le code (<code>STORAGES</code>)</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ============ 2. DONNÉES ============ -->
+<section>
+  <h2><span class="num">2</span>Modèle de données</h2>
+  <p class="lead">Quatre tables métier autour de <code>Dream</code>, plus l'utilisateur standard de Django. Le journal <code>APICallLog</code> est la clé du suivi du budget et des SLO : toutes les métriques du tableau d'administration en sont dérivées.</p>
+  <figure class="fig-erd">{{modele_donnees}}<figcaption>Figure 3 – Diagramme entité-association (PostgreSQL). <b>?</b> = colonne facultative (NULL autorisé).</figcaption></figure>
+  <h3>2.1 Dictionnaire des attributs</h3>
+  <table>
+    <thead><tr><th style="width:24%">Attribut</th><th style="width:15%">Type</th><th>Description et règles</th></tr></thead>
+    <tbody>
+      <tr><td colspan="3" style="background:#faf5ff;font-weight:700;color:#3b0764">Dream – un rêve raconté</td></tr>
+      <tr><td><code>id</code></td><td>uuid</td><td>Identifiant non devinable, exposé dans les URL (empêche l'énumération).</td></tr>
+      <tr><td><code>user_id</code></td><td>FK → User</td><td>Propriétaire. Toutes les requêtes passent par <code>Dream.objects.for_user(request.user)</code>. Suppression en cascade.</td></tr>
+      <tr><td><code>status</code></td><td>enum</td><td><code>received</code>, <code>transcribing</code>, <code>analyzing</code>, <code>generating</code>, <code>done</code>, <code>failed</code> (machine à états, §3).</td></tr>
+      <tr><td><code>audio_file</code>, <code>audio_format</code>, <code>audio_duration_s</code></td><td>varchar, real</td><td>Chemin du fichier (vidé après transcription), wav/mp3/webm, durée ≤ 10 min (25 Mo maximum côté API).</td></tr>
+      <tr><td><code>audio_deleted_at</code></td><td>timestamptz ?</td><td>Preuve de la minimisation : date de suppression de l'audio.</td></tr>
+      <tr><td><code>transcript</code>, <code>transcript_model</code>, <code>transcript_edited</code></td><td>text, varchar, bool</td><td>Texte du rêve, modèle utilisé (traçabilité en cas de changement de fournisseur), correction par l'utilisateur (US-07).</td></tr>
+      <tr><td><code>emotion_id</code>, <code>emotion_scores</code>, <code>emotion_corrected</code></td><td>FK, jsonb, bool</td><td>Émotion retenue, distribution complète des probabilités, correction manuelle (mesure de la justesse perçue, R6).</td></tr>
+      <tr><td><code>image_file</code>, <code>image_prompt</code>, <code>image_is_fallback</code></td><td>varchar, text, bool</td><td>Image générée, prompt réellement envoyé (audit de la minimisation), image de secours utilisée.</td></tr>
+      <tr><td><code>error_code</code>, <code>error_step</code></td><td>varchar ?</td><td>Dernière erreur (<code>timeout</code>, <code>quota_exceeded</code>, <code>content_refused</code>, <code>budget_exhausted</code>…) et étape, pour reprendre au bon endroit.</td></tr>
+      <tr><td><code>processing_ms</code>, <code>cost_eur</code></td><td>integer, numeric</td><td>Durée de bout en bout (SLO p95) et coût cumulé du rêve.</td></tr>
+      <tr><td colspan="3" style="background:#faf5ff;font-weight:700;color:#3b0764">APICallLog – un appel à un fournisseur (y compris chaque relance)</td></tr>
+      <tr><td><code>kind</code>, <code>provider</code>, <code>model</code></td><td>varchar</td><td>Brique (stt, emotion, image), fournisseur et version du modèle.</td></tr>
+      <tr><td><code>user_id</code></td><td>FK → User ?</td><td>Imputation du coût. Mis à NULL à la suppression du compte : le budget reste exact, sans donnée personnelle.</td></tr>
+      <tr><td><code>status</code>, <code>http_status</code>, <code>attempt</code></td><td>varchar, smallint</td><td>Résultat, code HTTP, numéro de tentative (1 = premier essai).</td></tr>
+      <tr><td><code>latency_ms</code>, <code>units</code>, <code>cost_usd</code>, <code>cost_eur</code></td><td>integer, numeric</td><td>Durée, quantité facturée (minutes d'audio, images) et coût calculé à partir de la grille tarifaire en configuration.</td></tr>
+      <tr><td colspan="3" style="background:#faf5ff;font-weight:700;color:#3b0764">Profile · Emotion</td></tr>
+      <tr><td><code>ai_consent_at</code>, <code>consent_version</code></td><td>timestamptz ?, varchar</td><td>Consentement explicite à l'envoi vers des prestataires d'IA ; sans lui, l'enregistrement est désactivé.</td></tr>
+      <tr><td><code>daily_dream_limit</code></td><td>smallint</td><td>Quota par utilisateur (5 par défaut) : protège le budget et limite les abus.</td></tr>
+      <tr><td><code>Emotion.key</code>, <code>label</code>, <code>icon</code>, <code>color</code></td><td>varchar</td><td>Référentiel : heureux, stressant, triste, étrange, neutre (chargé par migration de données).</td></tr>
+    </tbody>
+  </table>
+  <p class="legend-note"><b>Index :</b> <code>(user_id, created_at DESC)</code> pour l'historique, <code>(user_id, emotion_id, created_at)</code> pour les filtres du tableau de bord, <code>(created_at)</code> et <code>(kind, created_at)</code> sur <code>APICallLog</code> pour le budget et les latences.</p>
+</section>
+
+<section>
+  <h3>2.2 Schéma JSON d'un rêve stocké</h3>
+  <p>Format d'échange unique : réponse de <code>GET /api/dreams/{id}/</code> et format de l'export RGPD (US-17). Le schéma complet (JSON Schema 2020-12) est dans <code>architecture/dream.schema.json</code> ; il est vérifié par <code>pytest</code>, avec l'exemple ci-dessous et des cas invalides.</p>
+<pre>{
+  <span class="k">"id"</span>: <span class="s">"6f1c2b0e-8d4a-4c3e-9b7a-2e5f1d9c0a17"</span>,  <span class="k">"user_id"</span>: 42,  <span class="k">"status"</span>: <span class="s">"done"</span>,
+  <span class="k">"created_at"</span>: <span class="s">"2026-11-04T07:12:30+01:00"</span>,
+  <span class="k">"audio"</span>: { <span class="k">"format"</span>: <span class="s">"webm"</span>, <span class="k">"duration_s"</span>: 118.4, <span class="k">"deleted_at"</span>: <span class="s">"2026-11-04T07:12:41+01:00"</span> },
+  <span class="k">"transcript"</span>: { <span class="k">"text"</span>: <span class="s">"Je volais au-dessus d'une forêt endormie…"</span>, <span class="k">"language"</span>: <span class="s">"fr"</span>,
+                  <span class="k">"model"</span>: <span class="s">"gpt-transcribe"</span>, <span class="k">"edited"</span>: false },
+  <span class="k">"emotion"</span>: { <span class="k">"key"</span>: <span class="s">"heureux"</span>, <span class="k">"score"</span>: 0.82, <span class="k">"scores"</span>: { <span class="k">"heureux"</span>: 0.82, <span class="k">"neutre"</span>: 0.10, … },
+               <span class="k">"model"</span>: <span class="s">"mdeberta-v3-zero-shot"</span>, <span class="k">"corrected_by_user"</span>: false },
+  <span class="k">"image"</span>: { <span class="k">"url"</span>: <span class="s">"/media/dreams/2026/11/6f1c2b0e.png"</span>, <span class="k">"model"</span>: <span class="s">"gpt-image-1-mini"</span>, <span class="k">"size"</span>: <span class="s">"1024x1024"</span>,
+             <span class="k">"is_fallback"</span>: false, <span class="k">"ai_generated"</span>: true },
+  <span class="k">"processing"</span>: { <span class="k">"duration_ms"</span>: 24350, <span class="k">"cost_eur"</span>: 0.0184, <span class="k">"api_calls"</span>: 2 },
+  <span class="k">"error"</span>: null
+}</pre>
+  <p class="legend-note">Règles clés du schéma : <code>additionalProperties: false</code> partout ; <code>status</code> et <code>emotion.key</code> énumérés ; <code>image.ai_generated</code> vaut toujours <code>true</code> (transparence) ; un rêve <code>failed</code> peut avoir <code>transcript</code>, <code>emotion</code> et <code>image</code> à <code>null</code> mais doit alors porter un objet <code>error</code>.</p>
+
+  <!-- ============ 3. SÉQUENCE ============ -->
+  <h2><span class="num">3</span>Séquence clé · traitement complet d'un rêve</h2>
+  <h3>3.1 Machine à états d'un rêve</h3>
+  <div class="states"><span>received</span><em>→</em><span>transcribing</span><em>→</em><span>analyzing</span><em>→</em><span>generating</span><em>→</em><span class="end">done</span><em>&nbsp;·&nbsp; toute étape</em><em>→</em><span class="err">failed</span><em>→ « Réessayer » reprend à <code>error_step</code></em></div>
+  <p>La tâche est <b>idempotente</b> : une étape déjà réussie n'est jamais rejouée (si <code>transcript</code> existe, la transcription n'est pas refacturée). Un verrou Redis par <code>dream_id</code> empêche deux workers de traiter le même rêve.</p>
+  <figure class="fig-seq">{{sequence_reve}}<figcaption>Figure 4 – 3.2 Diagramme de séquence UML. La requête HTTP rend la main en moins d'une seconde ; le traitement se poursuit dans le worker.</figcaption></figure>
+</section>
+
+<section>
+  <h3>3.3 Gestion des cas d'erreur</h3>
+  <table>
+    <thead><tr><th style="width:22%">Situation</th><th style="width:22%">Détection</th><th>Réaction du système</th><th style="width:25%">Ce que voit l'utilisateur</th></tr></thead>
+    <tbody>
+      <tr><td>Fichier invalide (format, taille, vide)</td><td>Validation côté web (extension + signature)</td><td>Rejet immédiat, aucun appel payant</td><td>Message précis, formulaire conservé</td></tr>
+      <tr><td>Timeout, HTTP 429 ou 5xx</td><td>Client <code>httpx</code> + <code>tenacity</code></td><td>Relances bornées avec attente exponentielle et aléa ; respect de <code>Retry-After</code></td><td>Barre de progression, puis « Réessayer »</td></tr>
+      <tr><td>Fournisseur durablement en panne</td><td>Coupe-circuit : 5 échecs en 5 min</td><td>Fournisseur suspendu 2 min ; bascule STT de secours si configurée</td><td>Traitement plus lent mais abouti</td></tr>
+      <tr><td>Refus de contenu (image)</td><td>Erreur de sécurité du fournisseur</td><td>Aucune relance (budget) ; image de secours, <code>image_is_fallback</code></td><td>Image de substitution et explication neutre</td></tr>
+      <tr><td>Quota utilisateur atteint</td><td>Compteur Redis avant dépôt</td><td>Requête refusée (HTTP 429), aucun fichier stocké</td><td>« Revenez demain », compteur visible</td></tr>
+      <tr><td>Budget à 95 % / 100 %</td><td>Somme <code>APICallLog</code> (cache 60 s)</td><td>95 % : étape image sautée ; 100 % : plus aucun appel payant</td><td>Rêve transcrit et classé ; bandeau d'information</td></tr>
+      <tr><td>Modèle d'émotion indisponible</td><td>Échec de chargement au démarrage du worker</td><td>Repli sur le classifieur par mots-clés, alerte Sentry</td><td>Émotion proposée, toujours corrigeable</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ============ 4. APIs ============ -->
+<section>
+  <h2><span class="num">4</span>APIs · choix argumenté et API interne</h2>
+  <h3>4.1 APIs externes retenues</h3>
+  <table>
+    <thead><tr><th style="width:13%">Besoin</th><th style="width:20%">Choix</th><th style="width:13%">Coût unitaire</th><th>Pourquoi ce choix</th><th style="width:19%">Alternative prête</th></tr></thead>
+    <tbody>
+      <tr><td><b>Transcription</b></td><td>OpenAI <code>gpt-transcribe</code></td><td>0,0045 $/min</td><td>Qualité en français, fichier jusqu'à 25 Mo, même contrat que l'image ; <code>whisper-1</code> et <code>gpt-4o-transcribe</code> ont un retrait annoncé au 26/02/2027 (R4).</td><td>Deepgram Nova-3, AssemblyAI Universal-2 (moins cher)</td></tr>
+      <tr><td><b>Image</b></td><td>OpenAI <code>GPT Image 1 Mini</code>, qualité moyenne, 1024×1024</td><td>0,011 $/image</td><td>Meilleur rapport qualité/prix du benchmark, filtres de sécurité intégrés, une seule clé ; GPT Image 1 (0,042 $) coûterait à lui seul ≈ 15 € par mois dans le scénario, soit 75 % du budget.</td><td>FLUX.1 schnell (0,006 $), fournisseur à qualifier</td></tr>
+      <tr><td><b>Émotion</b></td><td>Modèle Hugging Face local, zero-shot multilingue (mDeBERTa-v3 XNLI) <span class="tag">à valider</span></td><td>0 €</td><td>Étiquettes libres en français (les 5 émotions du produit), aucune donnée transmise, pas de quota. Choix final sur le jeu de 20 textes annotés (R6).</td><td><code>xlm-emo-t</code> (4 émotions) ; mots-clés (repli)</td></tr>
+      <tr><td><b>Voix (option)</b></td><td>OpenAI <code>tts-1</code></td><td>15 $/M car.</td><td>Bonus « ambiance sonore » (US-10, Could) ; activé seulement si le budget le permet.</td><td>Google Neural2</td></tr>
+    </tbody>
+  </table>
+  <h3>4.2 Interfaces internes des fournisseurs (KAN-21)</h3>
+<pre><span class="k">class</span> Transcriber(Protocol):
+    <span class="k">def</span> transcribe(self, audio: Path, *, language: str = <span class="s">"fr"</span>) -&gt; Transcript: ...      <span class="c"># texte, modèle, durée facturée</span>
+
+<span class="k">class</span> EmotionClassifier(Protocol):
+    <span class="k">def</span> classify(self, text: str) -&gt; EmotionResult: ...                                 <span class="c"># clé, score, distribution</span>
+
+<span class="k">class</span> ImageGenerator(Protocol):
+    <span class="k">def</span> generate(self, prompt: str, *, size: str = <span class="s">"1024x1024"</span>) -&gt; GeneratedImage: ...   <span class="c"># octets PNG, modèle, coût</span>
+
+<span class="c"># settings.py : le fournisseur est une donnée de configuration, pas du code</span>
+AI_PROVIDERS = {<span class="s">"stt"</span>: env(<span class="s">"STT_PROVIDER"</span>, default=<span class="s">"openai"</span>), <span class="s">"image"</span>: env(<span class="s">"IMAGE_PROVIDER"</span>, default=<span class="s">"openai"</span>)}</pre>
+  <p>Chaque implémentation est enveloppée par un décorateur commun qui applique le délai maximal, les relances, le coupe-circuit et l'écriture d'<code>APICallLog</code>. Les tests remplacent les fournisseurs par des doublures (comme les services simulés de la maquette) : aucun test ne consomme de budget.</p>
+  <h3>4.3 Politique d'appel</h3>
+  <table>
+    <thead><tr><th style="width:14%">Brique</th><th style="width:15%">Délai maximal</th><th style="width:20%">Relances</th><th>Ne jamais relancer</th><th style="width:22%">Coût par rêve</th></tr></thead>
+    <tbody>
+      <tr><td>Transcription</td><td>60 s</td><td>2 (2 s, 4 s + aléa)</td><td>400, 401, 413 (erreurs de notre requête)</td><td>2 min × 0,0045 $ = 0,009 $</td></tr>
+      <tr><td>Image</td><td>90 s</td><td>1 (5 s)</td><td>Refus de contenu, 400, 401</td><td>0,011 $</td></tr>
+      <tr><td>Émotion</td><td>10 s (local)</td><td>0 → repli mots-clés</td><td>–</td><td>0 $</td></tr>
+      <tr><td colspan="4"><b>Total d'un rêve type</b> (hors relances, 1 $ = 0,92 €)</td><td><b>0,020 $ ≈ 0,018 €</b> <span class="tag ok">≤ 0,03 €</span></td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h3>4.4 API interne de l'application</h3>
+  <table>
+    <thead><tr><th style="width:9%">Méthode</th><th style="width:30%">Route</th><th>Rôle</th><th style="width:17%">Réponse</th></tr></thead>
+    <tbody>
+      <tr><td>GET/POST</td><td><code>/accounts/signup/</code>, <code>login/</code>, <code>logout/</code>, <code>password-reset/</code></td><td>Compte (US-01, US-02), avec limitation des tentatives</td><td>HTML</td></tr>
+      <tr><td>POST</td><td><code>/dreams/</code></td><td>Dépôt d'un audio (multipart, CSRF) ; vérifie consentement, quota, budget</td><td>202 + redirection</td></tr>
+      <tr><td>GET</td><td><code>/dreams/?emotion=&amp;from=&amp;to=&amp;page=</code></td><td>Historique paginé et filtré (US-12, US-13)</td><td>HTML</td></tr>
+      <tr><td>GET</td><td><code>/dreams/{uuid}/</code> · <code>/dreams/{uuid}/status/</code></td><td>Détail ; fragment de suivi interrogé toutes les 2 s (HTMX)</td><td>HTML partiel</td></tr>
+      <tr><td>POST</td><td><code>/dreams/{uuid}/edit/</code> · <code>retry/</code> · <code>delete/</code></td><td>Correction texte/émotion (US-07), reprise après échec, suppression définitive (US-14)</td><td>HTML partiel</td></tr>
+      <tr><td>GET</td><td><code>/dashboard/?period=&amp;emotion=</code></td><td>Fréquences, émotions dominantes, évolution (US-15, US-16)</td><td>HTML + JSON des graphiques</td></tr>
+      <tr><td>GET</td><td><code>/api/dreams/{uuid}/</code> · <code>/account/export/</code></td><td>Rêve au format du schéma §2.2 ; export complet (US-17)</td><td>JSON</td></tr>
+      <tr><td>POST</td><td><code>/account/delete/</code></td><td>Suppression du compte, des rêves et des fichiers (US-03)</td><td>Redirection</td></tr>
+      <tr><td>GET</td><td><code>/healthz/</code> · <code>/admin/</code></td><td>Santé (base + Redis, sans secret) ; supervision coûts et journal (staff)</td><td>JSON · HTML</td></tr>
+    </tbody>
+  </table>
+  <p class="legend-note">Toutes les vues de rêves exigent une session authentifiée et filtrent sur <code>request.user</code> : un identifiant étranger renvoie <b>404</b> (et non 403), pour ne pas révéler son existence.</p>
+
+  <!-- ============ 5. EXIGENCES ============ -->
+  <h2><span class="num">5</span>Exigences · performance, SLO, budget</h2>
+  <h3>5.1 Objectifs de niveau de service (SLO)</h3>
+  <table>
+    <thead><tr><th style="width:30%">Indicateur (SLI)</th><th style="width:18%">Objectif</th><th>Mesure</th><th style="width:14%">Fenêtre</th></tr></thead>
+    <tbody>
+      <tr><td>Durée de traitement d'un rêve de 2 min (dépôt → <code>done</code>)</td><td><b>p95 ≤ 30 s</b> <span class="tag">à mesurer</span></td><td><code>Dream.processing_ms</code></td><td>7 jours glissants</td></tr>
+      <tr><td>Temps de réponse des pages (historique, tableau de bord)</td><td><b>p95 ≤ 500 ms</b></td><td>Traces Sentry, test Locust</td><td>7 jours</td></tr>
+      <tr><td>Accusé de réception du dépôt audio</td><td><b>p95 ≤ 2 s</b></td><td>Traces Sentry</td><td>7 jours</td></tr>
+      <tr><td>Rêves aboutis (<code>done</code>, y compris image de secours)</td><td><b>≥ 98 %</b></td><td><code>Dream.status</code></td><td>30 jours</td></tr>
+      <tr><td>Taux d'erreur des appels API</td><td><b>&lt; 2 %</b></td><td><code>APICallLog.status</code></td><td>30 jours</td></tr>
+      <tr><td>Disponibilité de l'application (<code>/healthz</code>)</td><td><b>≥ 99 %</b> (hors fournisseurs)</td><td>Sonde externe toutes les 5 min</td><td>30 jours</td></tr>
+      <tr><td>Réponse à toute requête (succès ou erreur claire)</td><td><b>100 %</b></td><td>Tests d'erreurs, aucune page 500 brute</td><td>Chaque version</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h3>5.2 Budget de latence d'un rêve (objectif 30 s)</h3>
+  <div class="latency">
+    <div style="width:6.7%;background:#1e3a8a">Dépôt<br>2 s</div>
+    <div style="width:3.3%;background:#334155">1</div>
+    <div style="width:33.3%;background:#7c3aed">Transcription · 10 s</div>
+    <div style="width:5%;background:#0e7490">1,5</div>
+    <div style="width:46.7%;background:#db2777">Génération de l'image · 14 s</div>
+    <div style="width:5%;background:#64748b">1,5</div>
+  </div>
+  <p class="legend-note">Dépôt et validation 2 s · mise en file 1 s · transcription 10 s · émotion locale 1,5 s · image 14 s · enregistrement et détection par le polling 1,5 s. Les deux appels externes représentent 80 % du budget de latence : ce sont eux que mesure <code>benchmark_latency.py</code>. Si la transcription dépasse sa part, l'option est le découpage de l'audio ou le fournisseur de secours ; si l'image dépasse, la qualité « basse » (0,005 $) divise le temps.</p>
+
+  <h3>5.3 Budget API : 20 € pour toute la production</h3>
+  <div class="grid3">
+    <div class="card"><b>≈ 1 080 rêves</b><p>20 € ÷ 0,0184 € par rêve (transcription + image). Avec 30 % de relances : ≈ 830 rêves, largement au-delà des besoins de test et de démonstration.</p></div>
+    <div class="card"><b>Trois seuils</b><p><b style="display:inline;color:#b45309">80 %</b> e-mail + alerte Sentry · <b style="display:inline;color:#c2410c">95 %</b> images désactivées · <b style="display:inline;color:#b91c1c">100 %</b> plus aucun appel payant (KAN-23).</p></div>
+    <div class="card"><b>Deux barrières</b><p>Le compteur applicatif (somme d'<code>APICallLog</code>) et une limite de dépense configurée chez le fournisseur <span class="tag">à vérifier</span>, en cas de bug du compteur.</p></div>
+  </div>
+  <p class="legend-note">Le coût est estimé <b>avant</b> l'appel (blocage si le seuil serait franchi) et enregistré <b>après</b>, à partir des unités réellement facturées. La grille tarifaire est en configuration (variables d'environnement) et non dans le code.</p>
+
+  <h3>5.4 Capacité et test de charge (KAN-29)</h3>
+  <table>
+    <thead><tr><th style="width:18%">Palier Locust</th><th>Scénario</th><th style="width:38%">Critère de réussite</th></tr></thead>
+    <tbody>
+      <tr><td>5 utilisateurs</td><td rowspan="3">70 % navigation (historique, tableau de bord, filtres), 30 % dépôt d'un rêve ; fournisseurs IA remplacés par des doublures à latence réaliste (10 s et 14 s) pour ne rien dépenser</td><td>p95 pages ≤ 500 ms, 0 erreur</td></tr>
+      <tr><td>20 utilisateurs</td><td>p95 pages ≤ 500 ms, file absorbée, rêves p95 ≤ 30 s avec 4 tâches concurrentes</td></tr>
+      <tr><td>50 utilisateurs</td><td>Aucune erreur 5xx ; dégradation mesurée et documentée (limite de la configuration)</td></tr>
+    </tbody>
+  </table>
+  <p class="legend-note">Le worker passe le plus clair de son temps à attendre les APIs : la concurrence des appels externes est bornée (4 par défaut) pour respecter les limites de débit des fournisseurs, tandis que le web reste dimensionné indépendamment.</p>
+</section>
+
+<!-- ============ 6. JUSTIFICATION ============ -->
+<section>
+  <h2><span class="num">6</span>Justification technologique</h2>
+  <h3>6.1 Bibliothèques Python</h3>
+  <table>
+    <thead><tr><th style="width:15%">Domaine</th><th style="width:23%">Choix</th><th>Pourquoi</th><th style="width:20%">Écarté</th></tr></thead>
+    <tbody>
+      <tr><td>Framework web</td><td>Django 5.2 LTS</td><td>Recommandé par le sujet ; authentification, ORM, migrations, admin et protections (CSRF, XSS, clickjacking) intégrés : moins de code à sécuriser seul. Support long terme.</td><td>FastAPI (auth et admin à construire), Flask</td></tr>
+      <tr><td>Tâches</td><td>Celery 5 + Redis</td><td>Relances, délais, files dédiées et planification (purge, alertes) éprouvés ; Redis sert aussi aux quotas.</td><td>RQ (moins de contrôle), threads (perte au redémarrage)</td></tr>
+      <tr><td>Appels HTTP</td><td><code>httpx</code> + <code>tenacity</code></td><td>Délais par phase (connexion, lecture), relances déclaratives avec attente exponentielle ; même client pour tous les fournisseurs.</td><td>SDK propre à chaque fournisseur</td></tr>
+      <tr><td>IA locale</td><td><code>transformers</code> (CPU), ONNX en option</td><td>Accès direct aux modèles du Hub ; la quantification ONNX réduit mémoire et latence si besoin.</td><td>API d'inférence distante (données transmises)</td></tr>
+      <tr><td>Front</td><td>HTMX + Tailwind CSS</td><td>Interactivité (suivi en direct, filtres) sans SPA ni API à doubler ; Tailwind compilé, CSS minimal.</td><td>React (coût de maintenance seul)</td></tr>
+      <tr><td>Configuration</td><td><code>django-environ</code>, <code>.env</code></td><td>Douze facteurs : mêmes images en dev et en prod, secrets hors du dépôt, <code>.env.example</code> documenté.</td><td>Paramètres codés en dur</td></tr>
+      <tr><td>Sécurité</td><td>Argon2, <code>django-ratelimit</code>, <code>django-csp</code></td><td>Hachage recommandé, limitation des tentatives de connexion et des dépôts, politique de sécurité du contenu.</td><td>–</td></tr>
+      <tr><td>Tests</td><td>pytest, pytest-django, pytest-cov, factory_boy, respx, Locust</td><td>Fixtures lisibles, doublures HTTP pour <code>httpx</code>, seuil de couverture bloquant, charge scriptée en Python.</td><td>unittest seul</td></tr>
+      <tr><td>Qualité</td><td>ruff, mypy + django-stubs, pre-commit</td><td>PEP 8, imports, docstrings Google (<code>convention = "google"</code>, déjà actif sur la maquette) et typage vérifiés avant chaque commit.</td><td>flake8 + isort + black (3 outils)</td></tr>
+    </tbody>
+  </table>
+  <h3>6.2 Pipeline CI/CD</h3>
+  <figure>{{pipeline_cicd}}<figcaption>Figure 5 – GitHub Actions. Les étapes violettes s'exécutent sur chaque PR ; les étapes bleues seulement après fusion sur <code>main</code>.</figcaption></figure>
+  <ul>
+    <li><b>Sur chaque PR :</b> ruff, mypy, <code>pip-audit</code> (dépendances vulnérables), <code>python manage.py check --deploy</code> et <code>makemigrations --check</code>, puis pytest avec un service PostgreSQL ; <code>--cov-fail-under=70</code> bloque la fusion. Fournisseurs IA toujours simulés : la CI ne coûte rien.</li>
+    <li><b>Sur <code>main</code> :</b> image Docker multi-étapes (modèle d'émotion téléchargé à la construction, utilisateur non root), publiée sur GHCR avec le SHA du commit ; déploiement Render par <i>deploy hook</i>, migrations en étape de pré-déploiement, puis test de fumée sur <code>/healthz</code>. Retour arrière : redéployer le SHA précédent.</li>
+  </ul>
+</section>
+
+<section>
+  <h3>6.3 Monitoring, logs et métriques clés</h3>
+  <div class="grid2">
+    <div class="card"><b>Logs structurés</b><p>JSON sur la sortie standard (<code>python-json-logger</code>), un identifiant de corrélation par requête propagé à la tâche Celery (<code>dream_id</code>). <b>Jamais</b> de texte de rêve, de prompt ou d'audio dans les logs : uniquement identifiants, durées, codes.</p></div>
+    <div class="card"><b>Erreurs et traces</b><p>Sentry sur le web et le worker (intégrations Django et Celery), 10 % des transactions échantillonnées, <code>before_send</code> qui retire les corps de requêtes. Alerte sur nouvelle erreur et sur régression de latence.</p></div>
+    <div class="card"><b>Métriques métier</b><p>Calculées depuis la base et affichées dans l'admin : coût cumulé et projection, rêves par jour, p50/p95 de <code>processing_ms</code>, taux d'erreur et de relance par fournisseur, part d'images de secours, taux de correction de l'émotion.</p></div>
+    <div class="card"><b>Santé et alertes</b><p><code>/healthz</code> (base, Redis, âge de la plus vieille tâche en file) interrogé par une sonde externe ; alertes : budget 80 %, file bloquée &gt; 5 min, taux d'erreur API &gt; 2 % sur 1 h. Revue des métriques à chaque rétrospective.</p></div>
+  </div>
+  <h3>6.4 Sécurité de l'architecture</h3>
+  <p>HTTPS obligatoire (HSTS, cookies <code>Secure</code>/<code>HttpOnly</code>/<code>SameSite</code>), mots de passe Argon2, CSRF sur tous les formulaires, CSP stricte, uploads validés par signature et taille puis stockés sous un nom aléatoire hors de la racine web, médias servis seulement à leur propriétaire, secrets en variables d'environnement, compte de service à privilèges minimaux pour la base, dépendances auditées en CI. Ces mesures répondent aux risques R2 et R3 et à l'analyse RGPD du dossier de cadrage.</p>
+</section>
+
+<!-- ============ 7. TRAÇABILITÉ ============ -->
+<section>
+  <h2><span class="num">7</span>Traçabilité et points à valider</h2>
+  <table>
+    <thead><tr><th style="width:24%">User stories (Must)</th><th style="width:32%">Composants</th><th>Preuve (test ou mesure)</th></tr></thead>
+    <tbody>
+      <tr><td>US-01 compte</td><td>app <code>accounts</code>, Profile</td><td>Tests d'inscription, connexion, limitation des tentatives</td></tr>
+      <tr><td>US-04, US-05 enregistrer / uploader</td><td>Interface web, <code>POST /dreams/</code>, stockage</td><td>Tests de validation (format, taille, signature) ; tests navigateurs Chrome/Firefox/Safari</td></tr>
+      <tr><td>US-07, US-08, US-09 texte, émotion, image</td><td>Worker, interfaces §4.2, <code>APICallLog</code></td><td>Tests du pipeline avec doublures, cas d'erreur §3.2, jeu de 20 textes annotés</td></tr>
+      <tr><td>US-12, US-13 historique et filtres</td><td><code>/dreams/</code>, index §2</td><td>Tests d'isolation entre utilisateurs (404), Locust p95 ≤ 500 ms</td></tr>
+      <tr><td>US-15 fréquences, émotions dominantes</td><td><code>/dashboard/</code></td><td>Tests des agrégations (TDD)</td></tr>
+      <tr><td>US-18 budget ≤ 20 €</td><td>Garde budget, <code>APICallLog</code>, seuils</td><td>Tests des seuils 80/95/100 %, rapprochement mensuel avec la facture</td></tr>
+    </tbody>
+  </table>
+  <div class="callout warn"><b>Points à valider avant la production</b>
+    <ul style="margin-top:1mm">
+      <li>DPA OpenAI, non-entraînement et transfert hors UE ; même vérification pour le fournisseur STT de secours (checklist de <code>benchmark.xlsx</code>).</li>
+      <li>Latences réelles de la transcription et de l'image (<code>benchmark_latency.py</code>) au regard du budget de 30 s.</li>
+      <li>Modèle d'émotion : justesse sur le jeu de 20 textes (cible ≥ 70 %), mémoire et latence sur l'offre Render retenue (≥ 1 Go pour le worker).</li>
+      <li>Offres Render (web, worker, PostgreSQL, Key Value) : coût d'hébergement, distinct du budget API de 20 €.</li>
+    </ul>
+  </div>
+</section>
+
+</body>
+</html>

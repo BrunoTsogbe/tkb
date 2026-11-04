@@ -1,0 +1,5 @@
+# Génération du PDF et tests du schéma (architecture/)
+pypdf>=4.0
+jsonschema>=4.20
+pytest>=8.0
+ruff>=0.5

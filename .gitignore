@@ -1,4 +1,4 @@
-# Byte-compiled / optimized / DLL files
+﻿# Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
 *$py.class
@@ -218,3 +218,13 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# --- Synthétiseur de rêves ---
+.venv/
+latency_results.csv
+.browser-profile/
+ux/.browser-profile/
+# Application Django
+app/db.sqlite3
+app/media/
+app/staticfiles/

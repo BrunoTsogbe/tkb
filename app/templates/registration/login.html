@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Se connecter · Synthétiseur de rêves{% endblock %}
+{% block content %}
+<section class="card narrow">
+  <h1>Se connecter</h1>
+  <form method="post" novalidate>
+    {% csrf_token %}
+    {% include "partials/form_errors.html" %}
+    {% include "partials/field.html" with field=form.username %}
+    {% include "partials/field.html" with field=form.password %}
+    <input type="hidden" name="next" value="{{ next }}">
+    <button class="btn btn-primary wide" type="submit">Se connecter</button>
+  </form>
+  <p class="center">Pas encore de compte ? <a href="{% url 'accounts:signup' %}">Créer un compte</a></p>
+</section>
+{% endblock %}

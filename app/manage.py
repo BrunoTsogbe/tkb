@@ -1,0 +1,17 @@
+#!/usr/bin/env python
+"""Utilitaire en ligne de commande de Django."""
+
+import os
+import sys
+
+
+def main() -> None:
+    """Exécute une commande d'administration."""
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.dev")
+    from django.core.management import execute_from_command_line
+
+    execute_from_command_line(sys.argv)
+
+
+if __name__ == "__main__":
+    main()

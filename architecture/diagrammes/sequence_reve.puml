@@ -1,0 +1,49 @@
+@startuml sequence_reve
+title Traitement complet d'un rêve
+actor Rêveur
+participant Navigateur
+participant "Django web" as Web
+database PostgreSQL as DB
+queue Redis
+participant "Worker Celery" as Worker
+database Stockage
+participant OpenAI
+
+Rêveur -> Navigateur : Enregistre son rêve (micro)
+Navigateur -> Web : POST /dreams/ (audio, CSRF)
+Web -> Web : Valide format, taille, quota, budget
+Web -> Stockage : Enregistre l'audio
+Web -> DB : INSERT Dream (received)
+Web -> Redis : process_dream.delay(id)
+Web --> Navigateur : 202 + page de suivi
+
+group asynchrone
+  Redis -> Worker : Tâche process_dream
+  activate Worker
+  Worker -> DB : status = transcribing
+  Worker -> OpenAI : POST /audio/transcriptions (60 s, 2 relances)
+  OpenAI --> Worker : Texte
+  Worker -> DB : transcript + APICallLog
+  Worker -> Stockage : Supprime l'audio
+  Worker -> Worker : Classe l'émotion (modèle local)
+  Worker -> Worker : Budget OK ? prompt minimisé
+  Worker -> OpenAI : POST /images/generations (90 s, 1 relance)
+  OpenAI --> Worker : Image (base64)
+  Worker -> Stockage : Enregistre l'image
+  Worker -> DB : status = done + APICallLog
+  deactivate Worker
+end
+
+loop toutes les 2 s jusqu'à done / failed
+  Navigateur -> Web : GET /dreams/{id}/status/
+  Web -> DB : Lit statut et résultats
+  Web --> Navigateur : Fragment HTMX
+end
+Navigateur -> Rêveur : Texte, émotion, image
+
+note over Web, OpenAI
+  Timeout / 429 / 5xx → relance avec attente exponentielle ;
+  refus de contenu → image de secours ; budget atteint → étape image sautée ;
+  échec définitif → failed + « Réessayer » (reprise à error_step).
+end note
+@enduml

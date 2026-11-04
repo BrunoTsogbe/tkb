@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Mon rêve · Synthétiseur de rêves{% endblock %}
+{% block content %}
+<section class="card narrow">
+  <p class="muted">{{ dream.created_at|date:"l j F Y · H:i" }}</p>
+  <h1>Votre rêve est bien reçu</h1>
+  <ol class="steps" aria-label="Avancement du traitement">
+    <li class="done">Reçu</li>
+    <li class="{% if dream.status == 'transcribing' %}current{% elif dream.transcript %}done{% endif %}">Transcription</li>
+    <li class="{% if dream.status == 'analyzing' %}current{% elif dream.emotion %}done{% endif %}">Ambiance</li>
+    <li class="{% if dream.status == 'generating' %}current{% elif dream.image_file %}done{% endif %}">Image</li>
+  </ol>
+  {% if dream.status == 'received' %}
+    <p>Votre enregistrement{% if dream.audio_duration_s %} de {{ dream.audio_duration_s|floatformat:0 }} s{% endif %} est conservé en attendant son traitement.</p>
+    <p class="help">Le pipeline de transcription, d'analyse de l'ambiance et d'illustration arrive au Sprint 2 (KAN-18 à KAN-21).</p>
+  {% elif dream.status == 'failed' %}
+    <div class="alert" role="alert"><p>Le traitement n'a pas abouti. Votre enregistrement est conservé.</p></div>
+  {% endif %}
+  {% if dream.transcript %}<h2>Transcription</h2><p>{{ dream.transcript }}</p>{% endif %}
+  <p><a class="btn btn-secondary" href="{% url 'dreams:record' %}">Raconter un autre rêve</a></p>
+</section>
+{% endblock %}
