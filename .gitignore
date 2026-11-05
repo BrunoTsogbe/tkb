@@ -228,3 +228,4 @@ ux/.browser-profile/
 app/db.sqlite3
 app/media/
 app/staticfiles/
+rapport/.browser-profile/

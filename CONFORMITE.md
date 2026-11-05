@@ -25,7 +25,7 @@ Légende : ✅ fait et vérifié · 🟡 fait, mais non vérifié en conditions 
 
 | Exigence | État | Remarque |
 |---|---|---|
-| Rapport technique `rapport_<groupe>.pdf` | ❌ | KAN-31. Doit reprendre l'architecture **mise à jour** (voir « Écarts » ci-dessous) |
+| Rapport technique `rapport_<groupe>.pdf` | ✅ | `rapport_tsogbe.pdf` (sources `rapport/`, régénérer : `python rapport/build.py`) ; à refaire après KAN-39 avec les latences réelles |
 | Post-mortem `postmortem_<prenom>.pdf` | ❌ | KAN-32. Auto-évaluation personnelle : à rédiger par l'auteur |
 | Code review live (15 min) | ❌ | KAN-33. Candidat idéal : le bug `packaging` trouvé par le test de fumée Docker (avant / après, méthode) |
 | Accès au dépôt GitHub et au suivi Jira | ✅ | github.com/BrunoTsogbe/tkb (privé : donner l'accès au jury) · projet Jira KAN |
@@ -51,7 +51,7 @@ Légende : ✅ fait et vérifié · 🟡 fait, mais non vérifié en conditions 
 | Tests et validation (couverture, charge, stratégie) | ✅ | 159 tests ; charge 5 / 20 / 50 utilisateurs sur Docker sans échec (`loadtest/README.md`) |
 | CI/CD, config d'environnement, monitoring, logs | 🟡 | Logs JSON, Sentry, `/healthz/`, `/supervision/` ; pipelines non encore exécutés |
 | Performance (temps de réponse, latence API, UX) | 🟡 | Pages p95 ≤ 190 ms à 50 utilisateurs ; latence réelle des APIs non mesurée (KAN-39) |
-| Documentation (schémas mis à jour) | ❌ | Voir « Écarts » : à intégrer au rapport technique |
+| Documentation (schémas mis à jour) | ✅ | Rapport technique §1 : conteneurs mis à jour et tableau des écarts |
 
 ## Blocs 1 et 2 – Pré-production
 
@@ -83,6 +83,6 @@ Légende : ✅ fait et vérifié · 🟡 fait, mais non vérifié en conditions 
 1. **KAN-39** (clé OpenAI requise, moins de 0,50 €) : premiers appels réels de transcription et d'image,
    mesure des latences, activation et évaluation du modèle Hugging Face.
 2. **Ouvrir et fusionner les PR**, vérifier que la CI passe sur GitHub.
-3. **KAN-31** rapport technique, **KAN-40** analyse d'impact RGPD, **KAN-33** préparation de la revue.
+3. **KAN-40** analyse d'impact RGPD, **KAN-33** préparation de la revue (rapport KAN-31 fait).
 4. **KAN-32** post-mortem (personnel).
 5. Optionnel : déploiement Render, Tailwind (KAN-26), bonus voix / vidéo (KAN-35).
