@@ -5,9 +5,79 @@ from __future__ import annotations
 from typing import Any
 
 from django import forms
-from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
+from django.contrib.auth.forms import AuthenticationForm, PasswordResetForm, UserCreationForm
+from django.template import loader
 
 from .models import User
+from .tasks import send_email_task
+
+DELETE_WORD = "SUPPRIMER"
+
+
+class AsyncPasswordResetForm(PasswordResetForm):
+    """Réinitialisation du mot de passe : e-mail envoyé par le worker (KAN-37)."""
+
+    def send_mail(
+        self,
+        subject_template_name: str,
+        email_template_name: str,
+        context: dict[str, Any],
+        from_email: str | None,
+        to_email: str,
+        html_email_template_name: str | None = None,
+    ) -> None:
+        """Met l'e-mail en file au lieu de l'envoyer pendant la requête.
+
+        Args:
+            subject_template_name: Gabarit de l'objet.
+            email_template_name: Gabarit du texte.
+            context: Contexte (lien signé à usage unique).
+            from_email: Expéditeur (réglage par défaut si ``None``).
+            to_email: Destinataire.
+            html_email_template_name: Gabarit HTML facultatif.
+        """
+        subject = "".join(loader.render_to_string(subject_template_name, context).splitlines())
+        body = loader.render_to_string(email_template_name, context)
+        send_email_task.delay(subject, body, to_email)
+
+
+class DeleteAccountForm(forms.Form):
+    """Confirmation renforcée de la suppression du compte (wireframe « Compte »)."""
+
+    confirm = forms.CharField(label=f"Saisissez {DELETE_WORD} pour confirmer", max_length=20)
+    password = forms.CharField(label="Votre mot de passe", widget=forms.PasswordInput)
+
+    def __init__(self, user: User, *args: Any, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
+        self.user = user
+
+    def clean_confirm(self) -> str:
+        """Exige le mot de confirmation exact.
+
+        Returns:
+            Le mot saisi.
+
+        Raises:
+            forms.ValidationError: Si le mot ne correspond pas.
+        """
+        value = self.cleaned_data["confirm"].strip()
+        if value != DELETE_WORD:
+            raise forms.ValidationError(f"Saisissez exactement {DELETE_WORD}.")
+        return value
+
+    def clean_password(self) -> str:
+        """Vérifie le mot de passe actuel.
+
+        Returns:
+            Le mot de passe saisi.
+
+        Raises:
+            forms.ValidationError: Si le mot de passe est faux.
+        """
+        password = self.cleaned_data["password"]
+        if not self.user.check_password(password):
+            raise forms.ValidationError("Mot de passe incorrect.")
+        return password
 
 
 class SignupForm(UserCreationForm):

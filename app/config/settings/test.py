@@ -12,3 +12,4 @@ AI_BACKOFF_S = 0.0
 CACHES = {"default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"}}
 STORAGES["staticfiles"] = {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"}  # noqa: F405
 MIDDLEWARE = [m for m in MIDDLEWARE if "whitenoise" not in m]  # noqa: F405
+EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"

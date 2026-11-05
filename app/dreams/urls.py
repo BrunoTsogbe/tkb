@@ -14,4 +14,5 @@ urlpatterns = [
     path("dreams/<uuid:pk>/edit/", views.edit, name="edit"),
     path("dreams/<uuid:pk>/retry/", views.retry, name="retry"),
     path("dreams/<uuid:pk>/image/", views.image, name="image"),
+    path("dreams/<uuid:pk>/delete/", views.delete, name="delete"),
 ]

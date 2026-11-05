@@ -36,6 +36,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    "core.observability.RequestIdMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -100,6 +101,26 @@ STORAGES = {
     "staticfiles": {"BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"},
 }
 
+# E-mails (réinitialisation du mot de passe, alertes) : console en local, SMTP en production.
+vars().update(env.email_url("EMAIL_URL", default="consolemail://"))
+DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="Synthétiseur de rêves <no-reply@localhost>")
+SERVER_EMAIL = DEFAULT_FROM_EMAIL
+PASSWORD_RESET_TIMEOUT = 60 * 60
+
+# Stockage S3 compatible (Render, Cloudflare R2…) dès qu'un bucket est configuré : le web et le
+# worker doivent partager les fichiers. Les objets restent privés : ils sont servis par l'application.
+if env("AWS_STORAGE_BUCKET_NAME", default=""):
+    STORAGES["default"] = {
+        "BACKEND": "storages.backends.s3.S3Storage",
+        "OPTIONS": {  # type: ignore[dict-item]
+            "bucket_name": env("AWS_STORAGE_BUCKET_NAME"),
+            "endpoint_url": env("AWS_S3_ENDPOINT_URL", default=None),
+            "default_acl": "private",
+            "querystring_auth": True,
+            "file_overwrite": False,
+        },
+    }
+
 # Uploads : la limite de l'API de transcription est de 25 Mo par fichier.
 AUDIO_MAX_BYTES = env.int("AUDIO_MAX_BYTES", default=25 * 1024 * 1024)
 DATA_UPLOAD_MAX_MEMORY_SIZE = 2 * 1024 * 1024
@@ -140,10 +161,27 @@ CELERY_TASK_DEFAULT_QUEUE = "default"
 RATELIMIT_USE_CACHE = "default"
 LOGIN_RATE = env("LOGIN_RATE", default="5/15m")
 
+# Logs (KAN-12) : JSON en production (LOG_FORMAT=json), lisible en local. Jamais de contenu de rêve.
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
-    "formatters": {"plain": {"format": "%(asctime)s %(levelname)s %(name)s %(message)s"}},
-    "handlers": {"console": {"class": "logging.StreamHandler", "formatter": "plain"}},
+    "filters": {"request_id": {"()": "core.observability.RequestIdFilter"}},
+    "formatters": {
+        "plain": {"format": "%(asctime)s %(levelname)s %(name)s [%(request_id)s] %(message)s"},
+        "json": {"()": "core.observability.JsonFormatter"},
+    },
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": env("LOG_FORMAT", default="plain"),
+            "filters": ["request_id"],
+        }
+    },
     "root": {"handlers": ["console"], "level": env("LOG_LEVEL", default="INFO")},
+    "loggers": {"django.request": {"level": "WARNING"}, "httpx": {"level": "WARNING"}},
 }
+
+# Sentry (web + worker), désactivé sans DSN.
+SENTRY_DSN = env("SENTRY_DSN", default="")
+SENTRY_ENVIRONMENT = env("SENTRY_ENVIRONMENT", default="local")
+SENTRY_TRACES_SAMPLE_RATE = env.float("SENTRY_TRACES_SAMPLE_RATE", default=0.1)

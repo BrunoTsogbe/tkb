@@ -18,3 +18,9 @@ SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SAMESITE = "Lax"
 CSRF_COOKIE_SECURE = True
 X_FRAME_OPTIONS = "DENY"
+
+LOGGING["handlers"]["console"]["formatter"] = env("LOG_FORMAT", default="json")  # type: ignore[index]  # noqa: F405
+
+from core.observability import init_sentry  # noqa: E402
+
+init_sentry(SENTRY_DSN, SENTRY_ENVIRONMENT, SENTRY_TRACES_SAMPLE_RATE)  # noqa: F405

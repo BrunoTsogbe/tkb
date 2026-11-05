@@ -15,6 +15,7 @@ from django.views.decorators.http import require_GET, require_http_methods, requ
 
 from core.auth import current_user
 
+from .filters import DreamFilterForm
 from .forms import AudioUploadForm, DreamEditForm
 from .models import Dream, Emotion
 from .services import quota_for
@@ -71,17 +72,21 @@ def collection(request: HttpRequest) -> HttpResponse:
 
 
 def history(request: HttpRequest) -> HttpResponse:
-    """Historique paginé, du plus récent au plus ancien (KAN-14, US-12).
+    """Historique paginé et filtrable, du plus récent au plus ancien (KAN-14, KAN-24).
 
     Args:
-        request: Requête HTTP (paramètre ``page``).
+        request: Requête HTTP (``page``, ``period``, ``start``, ``end``, ``emotion``).
 
     Returns:
         La page d'historique.
     """
-    dreams = Dream.objects.for_user(current_user(request)).select_related("emotion")
+    form = DreamFilterForm(request.GET or None)
+    dreams = form.apply(Dream.objects.for_user(current_user(request)).select_related("emotion"))
     page = Paginator(dreams, HISTORY_PAGE_SIZE).get_page(request.GET.get("page"))
-    return render(request, "dreams/history.html", {"page": page})
+    params = request.GET.copy()
+    params.pop("page", None)
+    context = {"page": page, "form": form, "querystring": params.urlencode()}
+    return render(request, "dreams/history.html", context)
 
 
 def create(request: HttpRequest) -> HttpResponse:
@@ -198,6 +203,23 @@ def retry(request: HttpRequest, pk: UUID) -> HttpResponse:
         dream.save(update_fields=["status", "updated_at"])
         _enqueue(dream)
     return redirect("dreams:detail", pk=dream.id)
+
+
+@login_required
+@require_POST
+def delete(request: HttpRequest, pk: UUID) -> HttpResponse:
+    """Supprime définitivement un rêve, son image et son audio (KAN-15, US-14).
+
+    Args:
+        request: Requête HTTP.
+        pk: Identifiant du rêve.
+
+    Returns:
+        Redirection vers l'historique.
+    """
+    _own_dream(request, pk).delete()
+    messages.success(request, "Le rêve a été supprimé définitivement.")
+    return redirect("dreams:collection")
 
 
 @login_required

@@ -11,6 +11,7 @@
     <input type="hidden" name="next" value="{{ next }}">
     <button class="btn btn-primary wide" type="submit">Se connecter</button>
   </form>
+  <p class="center"><a href="{% url 'accounts:password_reset' %}">Mot de passe oublié ?</a></p>
   <p class="center">Pas encore de compte ? <a href="{% url 'accounts:signup' %}">Créer un compte</a></p>
 </section>
 {% endblock %}

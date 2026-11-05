@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Tableau de bord · Synthétiseur de rêves{% endblock %}
+{% block content %}
+<h1>Mon tableau de bord</h1>
+{% include "partials/filters.html" %}
+
+<section class="kpis" aria-label="Indicateurs">
+  <div class="card kpi"><span>Rêves racontés</span><b>{{ stats.total }}</b></div>
+  <div class="card kpi"><span>Ambiance dominante</span>
+    <b>{% if stats.dominant %}{{ stats.dominant.icon }} {{ stats.dominant.label }}{% else %}—{% endif %}</b></div>
+  <div class="card kpi"><span>Rêves par semaine</span><b>{{ stats.per_week|floatformat:1 }}</b></div>
+</section>
+
+{% if stats.total %}
+  <section class="charts">
+    <div class="card"><h2>Répartition des émotions</h2>{{ donut }}
+      <ul class="legend">{% for share in stats.shares %}{% if share.count %}
+        <li><i style="background: {{ share.emotion.color }}"></i>{{ share.emotion.icon }} {{ share.emotion.label }} · {% widthratio share.ratio 1 100 %} %</li>
+      {% endif %}{% endfor %}</ul>
+    </div>
+    <div class="card"><h2>Évolution dans le temps</h2>{{ bars }}
+      <p class="help">Par {% if stats.granularity == 'day' %}jour{% else %}semaine{% endif %}.</p>
+    </div>
+  </section>
+
+  <details class="card">
+    <summary>Voir les données sous forme de tableau</summary>
+    <table class="data">
+      <caption>Rêves par {% if stats.granularity == 'day' %}jour{% else %}semaine{% endif %} et par ambiance</caption>
+      <thead><tr><th scope="col">{% if stats.granularity == 'day' %}Jour{% else %}Semaine du{% endif %}</th>
+        {% for share in stats.shares %}<th scope="col">{{ share.emotion.label }}</th>{% endfor %}<th scope="col">Total</th></tr></thead>
+      <tbody>
+        {% for bucket in stats.timeline %}{% if bucket.total %}
+          <tr><th scope="row">{{ bucket.start|date:"d/m/Y" }}</th>
+            {% for share in stats.shares %}<td>{% for key, count in bucket.counts.items %}{% if key == share.emotion.key %}{{ count }}{% endif %}{% endfor %}</td>{% endfor %}
+            <td>{{ bucket.total }}</td></tr>
+        {% endif %}{% endfor %}
+      </tbody>
+    </table>
+  </details>
+{% else %}
+  <section class="card narrow center">
+    <p>Aucun rêve sur cette période.</p>
+    <a class="btn btn-primary" href="{% url 'dreams:record' %}">Raconter un rêve</a>
+  </section>
+{% endif %}
+{% endblock %}

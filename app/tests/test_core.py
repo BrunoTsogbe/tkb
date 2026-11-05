@@ -17,7 +17,7 @@ pytestmark = pytest.mark.django_db
 def test_healthz_reports_ok(client: Client) -> None:
     """La sonde répond 200 sans exposer d'information sensible."""
     response = client.get(reverse("healthz"))
-    assert response.status_code == 200 and response.json() == {"status": "ok", "database": "ok"}
+    assert response.status_code == 200 and response.json() == {"status": "ok", "database": "ok", "queue": "ok"}
 
 
 def test_healthz_reports_database_failure(client: Client, monkeypatch: pytest.MonkeyPatch) -> None:

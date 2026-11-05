@@ -14,6 +14,9 @@
       {% if user.is_authenticated %}
         <a href="{% url 'dreams:record' %}" {% if request.resolver_match.url_name == 'record' %}aria-current="page"{% endif %}>Raconter</a>
         <a href="{% url 'dreams:collection' %}" {% if request.resolver_match.url_name in 'collection detail' %}aria-current="page"{% endif %}>Historique</a>
+        <a href="{% url 'dashboard:index' %}" {% if request.resolver_match.app_name == 'dashboard' %}aria-current="page"{% endif %}>Tableau de bord</a>
+        {% if user.is_staff %}<a href="{% url 'supervision' %}">Supervision</a>{% endif %}
+        <a href="{% url 'accounts:account' %}" {% if request.resolver_match.url_name == 'account' %}aria-current="page"{% endif %}>Compte</a>
         <form method="post" action="{% url 'accounts:logout' %}" class="inline">{% csrf_token %}<button class="link">Se déconnecter</button></form>
       {% else %}
         <a href="{% url 'accounts:login' %}">Se connecter</a>

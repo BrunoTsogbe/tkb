@@ -6,19 +6,22 @@ from typing import Any
 
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.auth import login
+from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import LoginView
-from django.http import HttpRequest, HttpResponse
+from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
+from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.utils.http import url_has_allowed_host_and_scheme
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_GET, require_POST
 from django_ratelimit.decorators import ratelimit
 
 from core.auth import current_user
+from dreams.models import Dream
+from dreams.serializers import dream_to_dict
 
-from .forms import EmailAuthenticationForm, SignupForm
+from .forms import DeleteAccountForm, EmailAuthenticationForm, SignupForm
 
 
 def signup(request: HttpRequest) -> HttpResponse:
@@ -65,6 +68,67 @@ def consent(request: HttpRequest) -> HttpResponse:
     if not url_has_allowed_host_and_scheme(next_url, allowed_hosts={request.get_host()}):
         next_url = settings.LOGIN_REDIRECT_URL
     return redirect(next_url)
+
+
+@login_required
+@require_GET
+def account(request: HttpRequest) -> HttpResponse:
+    """Page « Mon compte » : consentement, export, suppression.
+
+    Args:
+        request: Requête HTTP.
+
+    Returns:
+        La page du compte.
+    """
+    user = current_user(request)
+    return render(request, "accounts/account.html", {"profile": user.profile, "delete_form": DeleteAccountForm(user)})
+
+
+@login_required
+@require_GET
+def export(request: HttpRequest) -> JsonResponse:
+    """Exporte tous les rêves de l'utilisateur en JSON (portabilité RGPD, KAN-38, US-17).
+
+    Args:
+        request: Requête HTTP.
+
+    Returns:
+        Fichier JSON en pièce jointe, conforme à ``dream.schema.json`` pour chaque rêve.
+    """
+    user = current_user(request)
+    dreams = Dream.objects.for_user(user).select_related("emotion").order_by("created_at")
+    payload = {
+        "exported_at": timezone.now().isoformat(),
+        "account": {"email": user.email, "date_joined": user.date_joined.isoformat()},
+        "dreams": [dream_to_dict(dream) for dream in dreams],
+    }
+    response = JsonResponse(payload, json_dumps_params={"ensure_ascii": False, "indent": 2})
+    response["Content-Disposition"] = f'attachment; filename="mes-reves-{timezone.localdate():%Y-%m-%d}.json"'
+    return response
+
+
+@login_required
+@require_POST
+def delete_account(request: HttpRequest) -> HttpResponse:
+    """Supprime le compte, les rêves et leurs fichiers (KAN-15, US-03).
+
+    Le journal des coûts est conservé sans lien avec la personne (``user_id`` à NULL).
+
+    Args:
+        request: Requête HTTP (``confirm`` et ``password``).
+
+    Returns:
+        Redirection vers l'inscription, ou la page du compte avec les erreurs.
+    """
+    user = current_user(request)
+    form = DeleteAccountForm(user, request.POST)
+    if not form.is_valid():
+        return render(request, "accounts/account.html", {"profile": user.profile, "delete_form": form}, status=400)
+    logout(request)
+    user.delete()
+    messages.success(request, "Votre compte et tous vos rêves ont été supprimés.")
+    return redirect("accounts:signup")
 
 
 @method_decorator(ratelimit(key="ip", rate=settings.LOGIN_RATE, method="POST", block=False), name="post")

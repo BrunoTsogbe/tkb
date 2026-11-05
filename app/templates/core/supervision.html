@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Supervision · Synthétiseur de rêves{% endblock %}
+{% block content %}
+<h1>Supervision</h1>
+<p class="muted">Fenêtre : {{ metrics.days }} derniers jours ·
+  <a href="?days=1">24 h</a> · <a href="?days=7">7 j</a> · <a href="?days=30">30 j</a> · <a href="{% url 'admin:index' %}">Administration</a></p>
+
+<section class="kpis">
+  <div class="card kpi"><span>Budget API consommé</span><b>{{ metrics.spent_eur|floatformat:2 }} € / {{ metrics.budget_eur|floatformat:0 }} €</b>
+    <meter min="0" max="1" low="0.8" high="0.95" optimum="0" value="{{ metrics.budget_ratio }}"></meter>
+    <span>{% widthratio metrics.budget_ratio 1 100 %} % · reste {{ metrics.remaining_eur|floatformat:2 }} €</span></div>
+  <div class="card kpi"><span>Traitement d'un rêve (p50 / p95)</span>
+    <b>{% if metrics.p50_ms %}{% widthratio metrics.p50_ms 1000 1 %} s / {% widthratio metrics.p95_ms 1000 1 %} s{% else %}—{% endif %}</b>
+    <span>Objectif : p95 ≤ 30 s</span></div>
+  <div class="card kpi"><span>Rêves (terminés / en échec)</span>
+    <b>{{ metrics.dreams.done }} / {{ metrics.dreams.failed }}</b>
+    <span>Images de secours : {% widthratio metrics.fallback_ratio 1 100 %} %</span></div>
+</section>
+
+<section class="card">
+  <h2>Fiabilité des fournisseurs</h2>
+  <table class="data">
+    <thead><tr><th scope="col">Brique</th><th scope="col">Fournisseur</th><th scope="col">Appels</th><th scope="col">Échecs</th><th scope="col">Taux d'erreur (objectif &lt; 2 %)</th></tr></thead>
+    <tbody>
+      {% for row in metrics.providers %}
+        <tr><td>{{ row.kind }}</td><td>{{ row.provider }}</td><td>{{ row.calls }}</td><td>{{ row.errors }}</td>
+          <td>{% widthratio row.error_rate 1 100 %} %</td></tr>
+      {% empty %}<tr><td colspan="5">Aucun appel sur la période.</td></tr>{% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endblock %}

@@ -32,5 +32,14 @@
 {% endif %}
 <p><a class="btn btn-secondary" href="{% url 'dreams:record' %}">Raconter un autre rêve</a>
    <a href="{% url 'dreams:collection' %}">Voir mon historique</a></p>
+{% if dream.is_finished %}
+  <details class="card danger">
+    <summary>Supprimer ce rêve</summary>
+    <p>Le texte, l'ambiance et l'image seront effacés définitivement.</p>
+    <form method="post" action="{% url 'dreams:delete' dream.id %}">{% csrf_token %}
+      <button class="btn btn-danger" type="submit">Supprimer définitivement</button>
+    </form>
+  </details>
+{% endif %}
 {% endblock %}
 {% block scripts %}<script src="{% static 'js/status.js' %}" defer></script>{% endblock %}

@@ -48,7 +48,21 @@ Règles de contribution (branches, PR, définition de terminé) : `CONTRIBUTING.
 Par défaut, les fournisseurs sont simulés (`AI_STT_PROVIDER=fake`) : aucune clé, aucun coût. Pour les vrais
 appels, renseigner `OPENAI_API_KEY` et passer `AI_STT_PROVIDER` / `AI_IMAGE_PROVIDER` à `openai`.
 
-89 tests dédiés à l'application (99 % de couverture de `app/`), 133 tests au total.
+| Sprint 3 | État |
+|---|---|
+| KAN-24 Filtres période / émotions, dans l'URL, conservés par la pagination | ✅ |
+| KAN-25 Tableau de bord : indicateurs, répartition, évolution (SVG serveur + tableau accessible) | ✅ `/dashboard/` |
+| KAN-15 Suppression d'un rêve et du compte, fichiers effacés, coûts anonymisés | ✅ |
+| KAN-37 Mot de passe oublié (lien unique 1 h, envoi par le worker) | ✅ |
+| KAN-38 Export JSON conforme au schéma | ✅ `/accounts/export/` |
+| KAN-12 Logs JSON + identifiant de requête, Sentry filtré, `/healthz/` (file bloquée), `/supervision/` | ✅ |
+| KAN-11 Blueprint Render + workflow Deploy (GHCR, deploy hooks, test de fumée) | ✅ écrit · à brancher sur ton compte Render |
+
+Déploiement Render : créer le blueprint depuis `render.yaml`, renseigner les secrets `sync: false`
+(clé OpenAI, bucket S3, DSN Sentry, `EMAIL_URL`), puis ajouter dans GitHub les secrets
+`RENDER_DEPLOY_HOOK_WEB`, `RENDER_DEPLOY_HOOK_WORKER` et la variable `APP_URL`.
+
+115 tests dédiés à l'application, 159 tests au total.
 
 ## Livrables de pré-production
 
