@@ -1,0 +1,6 @@
+streamlit>=1.50
+requests>=2.31
+pillow>=10.0
+pytest>=8.0
+pytest-cov>=5.0
+ruff>=0.5

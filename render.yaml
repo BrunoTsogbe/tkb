@@ -1,0 +1,76 @@
+# Blueprint Render (KAN-11) : web, worker, PostgreSQL et Redis (Key Value).
+# Les déploiements ne partent que du workflow « Deploy », après une CI verte sur main (autoDeploy: false).
+# Les secrets marqués « sync: false » se renseignent une fois dans le tableau de bord Render.
+services:
+  - type: web
+    name: synthetiseur-web
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: starter
+    region: frankfurt
+    autoDeploy: false
+    healthCheckPath: /healthz/
+    preDeployCommand: python manage.py migrate --noinput
+    envVars: &shared-env
+      - key: DJANGO_SETTINGS_MODULE
+        value: config.settings.prod
+      - key: DJANGO_SECRET_KEY
+        generateValue: true
+      - key: DJANGO_ALLOWED_HOSTS
+        value: .onrender.com
+      - key: DJANGO_CSRF_TRUSTED_ORIGINS
+        value: https://synthetiseur-web.onrender.com
+      - key: DATABASE_URL
+        fromDatabase: { name: synthetiseur-db, property: connectionString }
+      - key: CELERY_BROKER_URL
+        fromService: { type: keyvalue, name: synthetiseur-redis, property: connectionString }
+      - key: CACHE_URL
+        fromService: { type: keyvalue, name: synthetiseur-redis, property: connectionString }
+      - key: CELERY_TASK_ALWAYS_EAGER
+        value: "false"
+      - key: LOG_FORMAT
+        value: json
+      - key: SENTRY_ENVIRONMENT
+        value: production
+      - key: SENTRY_DSN
+        sync: false
+      - key: AI_STT_PROVIDER
+        value: openai
+      - key: AI_IMAGE_PROVIDER
+        value: openai
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: EMAIL_URL
+        sync: false
+      # Le web et le worker ne partagent pas de disque sur Render : stockage S3 compatible obligatoire.
+      - key: AWS_STORAGE_BUCKET_NAME
+        sync: false
+      - key: AWS_S3_ENDPOINT_URL
+        sync: false
+      - key: AWS_ACCESS_KEY_ID
+        sync: false
+      - key: AWS_SECRET_ACCESS_KEY
+        sync: false
+
+  - type: worker
+    name: synthetiseur-worker
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    dockerCommand: celery -A config worker --loglevel=info --concurrency=2
+    plan: starter
+    region: frankfurt
+    autoDeploy: false
+    envVars: *shared-env
+
+  - type: keyvalue
+    name: synthetiseur-redis
+    plan: free
+    region: frankfurt
+    ipAllowList: []
+
+databases:
+  - name: synthetiseur-db
+    databaseName: synthetiseur
+    user: synthetiseur
+    plan: basic-256mb
+    region: frankfurt

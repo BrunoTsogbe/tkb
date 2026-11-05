@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Mon compte · Synthétiseur de rêves{% endblock %}
+{% block content %}
+<h1>Mon compte</h1>
+<p class="muted">{{ user.email }}</p>
+
+<section class="account-grid">
+  <div class="card">
+    <h2>Consentement IA</h2>
+    {% if profile.has_ai_consent %}
+      <p>Actif depuis le {{ profile.ai_consent_at|date:"j F Y" }} · version {{ profile.consent_version }}.</p>
+      <p class="help">Votre voix et le texte de vos rêves sont envoyés à des prestataires d'IA (OpenAI, hors UE) pour la transcription et l'illustration. L'enregistrement est supprimé dès la transcription.</p>
+      <form method="post" action="{% url 'accounts:consent' %}">{% csrf_token %}
+        <input type="hidden" name="action" value="withdraw"><input type="hidden" name="next" value="{% url 'accounts:account' %}">
+        <button class="btn btn-secondary" type="submit">Retirer mon consentement</button>
+      </form>
+    {% else %}
+      <p>Non donné : l'enregistrement de nouveaux rêves est désactivé.</p>
+      <form method="post" action="{% url 'accounts:consent' %}">{% csrf_token %}
+        <input type="hidden" name="action" value="give"><input type="hidden" name="next" value="{% url 'accounts:account' %}">
+        <button class="btn btn-primary" type="submit">Donner mon consentement</button>
+      </form>
+    {% endif %}
+  </div>
+  <div class="card">
+    <h2>Mes données</h2>
+    <p>Téléchargez tous vos rêves (textes, ambiances, dates) au format JSON.</p>
+    <a class="btn btn-secondary" href="{% url 'accounts:export' %}">Exporter mes rêves (JSON)</a>
+  </div>
+</section>
+
+<section class="card danger">
+  <h2>Zone sensible</h2>
+  <p>Supprimer mon compte efface définitivement mes rêves, images et enregistrements. Cette action est irréversible.</p>
+  <form method="post" action="{% url 'accounts:delete' %}" novalidate>
+    {% csrf_token %}
+    {% include "partials/field.html" with field=delete_form.confirm %}
+    {% include "partials/field.html" with field=delete_form.password %}
+    <button class="btn btn-danger" type="submit">Supprimer mon compte</button>
+  </form>
+</section>
+{% endblock %}

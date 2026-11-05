@@ -1,0 +1,38 @@
+[tool.ruff]
+line-length = 120
+extend-exclude = ["app/*/migrations"]
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "D", "UP", "B"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.per-file-ignores]
+"maquette/tests/*" = ["D106"]
+"app/**" = ["D104", "D105", "D106", "D107"]
+"app/tests/*" = ["D102", "D103", "D104", "D105", "D106", "D107"]
+"app/config/settings/*" = ["F405"]
+"maquette/theme.py" = ["E501"]  # feuille CSS embarquée
+
+[tool.pytest.ini_options]
+pythonpath = ["maquette", "app"]
+testpaths = ["maquette/tests", "architecture/tests", "app/tests"]
+DJANGO_SETTINGS_MODULE = "config.settings.test"
+
+[tool.ruff.lint.isort]
+known-first-party = ["services", "theme", "diagrams", "svg", "wireframes", "config", "accounts", "dreams", "ai", "dashboard", "core", "tests"]
+
+[tool.mypy]
+python_version = "3.12"
+mypy_path = "app"
+files = ["app"]
+exclude = ["app/.*/migrations/", "app/tests/"]
+plugins = ["mypy_django_plugin.main"]
+check_untyped_defs = true
+warn_unused_ignores = true
+ignore_missing_imports = true
+
+[tool.django-stubs]
+django_settings_module = "config.settings.test"

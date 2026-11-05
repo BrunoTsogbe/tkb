@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Mon rêve · Synthétiseur de rêves{% endblock %}
+{% block content %}
+<p class="muted">{{ dream.created_at|date:"l j F Y · H:i" }}</p>
+{% include "dreams/_status.html" %}
+
+{% if dream.status == 'done' %}
+  <section class="result">
+    <figure class="result-image" style="--accent: {{ dream.emotion.color }}">
+      <img src="{% url 'dreams:image' dream.id %}" alt="Illustration générée par IA de ce rêve" width="512" height="512">
+      <figcaption>{% if dream.image_is_fallback %}Image de substitution (le service d'images n'a pas pu illustrer ce rêve){% else %}Image générée par IA{% endif %}</figcaption>
+    </figure>
+    <div class="card">
+      <p class="badge" style="--accent: {{ dream.emotion.color }}">{{ dream.emotion.icon }} {{ dream.emotion.label }}{% if dream.emotion_corrected %} · corrigée{% endif %}</p>
+      <ul class="bars" aria-label="Probabilités par ambiance">
+        {% for emotion in emotions %}
+          {% for key, score in dream.emotion_scores.items %}{% if key == emotion.key %}
+            <li><span>{{ emotion.icon }} {{ emotion.label }}</span><meter min="0" max="1" value="{{ score }}"></meter><span>{% widthratio score 1 100 %} %</span></li>
+          {% endif %}{% endfor %}
+        {% endfor %}
+      </ul>
+      <form method="post" action="{% url 'dreams:edit' dream.id %}">
+        {% csrf_token %}
+        <div class="field"><label for="id_transcript">Transcription · modifiable</label>{{ form.transcript }}</div>
+        <div class="field"><label for="id_emotion">Ce n'est pas ça ? Corrigez l'ambiance</label>{{ form.emotion }}</div>
+        <p class="help">L'ambiance décrit le texte du rêve, ce n'est pas un diagnostic.</p>
+        <button class="btn btn-primary" type="submit">Enregistrer les corrections</button>
+      </form>
+    </div>
+  </section>
+{% endif %}
+<p><a class="btn btn-secondary" href="{% url 'dreams:record' %}">Raconter un autre rêve</a>
+   <a href="{% url 'dreams:collection' %}">Voir mon historique</a></p>
+{% if dream.is_finished %}
+  <details class="card danger">
+    <summary>Supprimer ce rêve</summary>
+    <p>Le texte, l'ambiance et l'image seront effacés définitivement.</p>
+    <form method="post" action="{% url 'dreams:delete' dream.id %}">{% csrf_token %}
+      <button class="btn btn-danger" type="submit">Supprimer définitivement</button>
+    </form>
+  </details>
+{% endif %}
+{% endblock %}
+{% block scripts %}<script src="{% static 'js/status.js' %}" defer></script>{% endblock %}

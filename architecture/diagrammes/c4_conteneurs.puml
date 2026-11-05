@@ -1,0 +1,31 @@
+@startuml c4_conteneurs
+!include <C4/C4_Container>
+title Synthétiseur de rêves – C4 niveau 2 (conteneurs)
+
+Person(dreamer, "Rêveur")
+System_Boundary(app, "Synthétiseur de rêves") {
+  Container(ui, "Interface web", "Gabarits Django, HTMX, Tailwind", "Enregistrement MediaRecorder, suivi en direct, tableau de bord")
+  Container(web, "Application web", "Django 5.2, Gunicorn", "Auth, upload, historique, filtres, budget, admin")
+  ContainerQueue(redis, "File de tâches", "Redis 7", "Broker Celery, cache, quotas")
+  Container(worker, "Worker IA", "Celery 5, Python 3.12", "STT → émotion (HF local) → image ; relances, coûts")
+  ContainerDb(pg, "Base de données", "PostgreSQL 16", "Utilisateurs, rêves, émotions, journal des appels")
+  ContainerDb(media, "Stockage des médias", "Volume / S3", "Audio temporaire, images")
+}
+System_Ext(openai, "OpenAI API")
+System_Ext(backup, "STT de secours")
+System_Ext(sentry, "Sentry")
+System_Ext(mail, "E-mail")
+
+Rel(dreamer, ui, "Utilise", "HTTPS")
+Rel(ui, web, "Requêtes, upload, polling", "HTMX")
+Rel(web, redis, "Publie process_dream(id)")
+Rel(redis, worker, "Distribue les tâches")
+Rel(web, pg, "Lit / écrit", "SQL")
+Rel(worker, pg, "Statut, résultats, coûts", "SQL")
+Rel(web, media, "Dépose l'audio")
+Rel(worker, media, "Lit l'audio, écrit l'image, supprime l'audio")
+Rel(worker, openai, "Transcription, image", "HTTPS")
+Rel(worker, backup, "Bascule STT", "HTTPS")
+Rel(worker, sentry, "Erreurs (web + worker)")
+Rel(worker, mail, "E-mails asynchrones", "SMTP")
+@enduml

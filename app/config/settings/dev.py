@@ -1,0 +1,7 @@
+"""Réglages de développement local."""
+
+from .base import *  # noqa: F403
+
+DEBUG = True
+ALLOWED_HOSTS = ["*"]
+STORAGES["staticfiles"] = {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"}  # noqa: F405

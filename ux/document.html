@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Synthétiseur de rêves – UX : charte, parcours et wireframes</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+@page { size: A4; margin: 13mm 14mm 15mm; }
+@page { @bottom-left { content: "Synthétiseur de rêves · UX : charte, parcours et wireframes"; font: 7.5pt Inter, sans-serif; color: #94a3b8; }
+        @bottom-right { content: counter(page) " / " counter(pages); font: 7.5pt Inter, sans-serif; color: #94a3b8; } }
+@page :first { @bottom-left { content: none; } @bottom-right { content: none; } }
+* { box-sizing: border-box; }
+html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+body { margin: 0; font: 9pt/1.45 Inter, "Segoe UI", sans-serif; color: #0f172a; }
+h1, h2, h3 { font-family: Fraunces, Georgia, serif; margin: 0; }
+h2 { font-size: 16pt; margin: 4mm 0 2mm; break-after: avoid; }
+h2 .num { color: #7c3aed; font-size: 13pt; margin-right: 2mm; }
+h3 { font-size: 11pt; margin: 3mm 0 1.5mm; color: #3b0764; break-after: avoid; }
+p { margin: 0 0 2mm; }
+.page { break-before: page; }
+.lead { color: #334155; }
+figure { margin: 1.5mm 0 2mm; break-inside: avoid; }
+figure svg { width: 100%; height: auto; display: block; }
+figcaption { font-size: 7.8pt; color: #64748b; text-align: center; margin-top: 1mm; }
+.screen { display: grid; grid-template-columns: 1.55fr 1fr; gap: 4mm; align-items: start; break-inside: avoid; margin-bottom: 3mm; }
+.screen ol { margin: 0; padding-left: 0; list-style: none; counter-reset: n; font-size: 8.3pt; }
+.screen li { counter-increment: n; position: relative; padding-left: 7mm; margin-bottom: 1.6mm; }
+.screen li::before { content: counter(n); position: absolute; left: 0; top: .2mm; width: 4.6mm; height: 4.6mm; border-radius: 50%; background: #e11d48; color: #fff; font-size: 7pt; font-weight: 700; display: grid; place-items: center; }
+.screen .meta { font-size: 7.8pt; color: #64748b; margin-bottom: 1.5mm; }
+.mobiles { display: grid; grid-template-columns: 1fr 1fr 1.6fr; gap: 5mm; align-items: start; }
+.mobiles figure svg { max-height: 78mm; }
+.cover { height: 268mm; border-radius: 5mm; padding: 16mm 15mm; color: #ece9ff; display: flex; flex-direction: column; overflow: hidden;
+  background: radial-gradient(120mm 80mm at 15% 0%, rgba(124,58,237,.55), transparent 70%), radial-gradient(110mm 90mm at 100% 10%, rgba(219,39,119,.35), transparent 70%), radial-gradient(140mm 90mm at 50% 115%, rgba(34,211,238,.28), transparent 70%), #070718; }
+.cover .kicker { text-transform: uppercase; letter-spacing: .22em; font-size: 8pt; color: #c4b5fd; margin: 12mm 0 4mm; }
+.cover h1 { color: #fff; font-size: 32pt; line-height: 1.05; }
+.cover h1 span { background: linear-gradient(100deg, #fff 10%, #a78bfa 45%, #f472b6 80%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.cover .sub { font-size: 11.5pt; color: #ddd6fe; max-width: 145mm; margin-top: 4mm; }
+.moon { width: 18mm; height: 18mm; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #fffbe8, #f5e7b8 55%, #d8c48a); box-shadow: 0 0 12mm 2mm rgba(253,230,138,.35); }
+.cover .toc { margin-top: 10mm; display: grid; grid-template-columns: 1fr 1fr; gap: 2mm 8mm; font-size: 10pt; max-width: 150mm; }
+.cover .toc div { border-bottom: 1px dashed rgba(196,181,253,.3); padding-bottom: 1mm; }
+.cover .toc b { color: #f9a8d4; margin-right: 2mm; }
+.cover .meta { margin-top: auto; font-size: 8.5pt; color: #c4b5fd; }
+.swatches { display: grid; grid-template-columns: repeat(6, 1fr); gap: 2.5mm; margin: 2mm 0 3mm; }
+.sw { border-radius: 2.5mm; overflow: hidden; border: 1px solid #e2e8f0; font-size: 7.6pt; break-inside: avoid; }
+.sw i { display: block; height: 13mm; }
+.sw div { padding: 1.4mm 2mm; } .sw b { display: block; font-size: 8pt; }
+.emo { display: grid; grid-template-columns: repeat(5, 1fr); gap: 2.5mm; margin: 2mm 0 3mm; }
+.emo div { border-radius: 9mm; padding: 2mm 3mm; color: #fff; font-weight: 700; font-size: 9pt; text-align: center; }
+table { width: 100%; border-collapse: collapse; font-size: 8pt; margin: 1.5mm 0 3mm; }
+th { background: #f5f3ff; color: #3b0764; text-align: left; padding: 1.3mm 2mm; border-bottom: 1.4px solid #c4b5fd; }
+td { padding: 1.2mm 2mm; border-bottom: 1px solid #e2e8f0; vertical-align: top; }
+.type { display: grid; grid-template-columns: 1fr 1fr; gap: 4mm; }
+.card { border: 1px solid #ddd6fe; border-radius: 3mm; padding: 3mm 3.5mm; break-inside: avoid; }
+.demo-ui { background: #070718; border-radius: 3mm; padding: 4mm; display: flex; gap: 3mm; align-items: center; flex-wrap: wrap; }
+.btn-p { border-radius: 9mm; padding: 2mm 5mm; color: #fff; font-weight: 600; background: linear-gradient(100deg, #7c3aed, #db2777, #f59e0b); }
+.btn-s { border-radius: 9mm; padding: 2mm 5mm; color: #ece9ff; border: 1px solid rgba(196,181,253,.35); }
+.badge { border-radius: 9mm; padding: 1.5mm 4mm; color: #fff; font-weight: 700; background: linear-gradient(90deg, #fbbf24cc, #fbbf2455); }
+.glass { border-radius: 3mm; padding: 2.5mm 4mm; color: #ece9ff; background: rgba(255,255,255,.06); border: 1px solid rgba(196,181,253,.2); font-size: 8pt; }
+</style>
+</head>
+<body>
+
+<section class="cover">
+  <div class="moon"></div>
+  <div class="kicker">Dossier de pré-production · UX/UI · Blocs 1 et 2</div>
+  <h1><span>Synthétiseur de rêves</span><br>Charte, parcours et wireframes</h1>
+  <p class="sub">Charte graphique minimaliste, parcours utilisateur et wireframes basse fidélité des écrans de l'application de production (Django). Ils complètent la maquette Streamlit et servent de référence aux tickets KAN-13 à KAN-26.</p>
+  <div class="toc">
+    <div><b>1</b>Principes et charte minimaliste</div>
+    <div><b>2</b>Parcours utilisateur (flow diagram)</div>
+    <div><b>3</b>Wireframes : compte, raconter, suivi</div>
+    <div><b>4</b>Wireframes : résultat, historique, tableau de bord</div>
+    <div><b>5</b>Wireframes : compte RGPD et mobile</div>
+    <div><b>6</b>Correspondance écrans ↔ user stories</div>
+  </div>
+  <div class="meta">Bruno Tsogbe · 4 novembre 2026 · Sources : ux/wireframes.py (dessins générés), maquette/theme.py (charte appliquée)</div>
+</section>
+
+<section class="page">
+  <h2><span class="num">1</span>Principes et charte minimaliste</h2>
+  <p class="lead">Les interviews éclair ont fait ressortir trois attentes : enregistrer tout de suite, pouvoir corriger, maîtriser ses données. L'interface en découle : un seul geste principal par écran, des états toujours visibles (chargement, erreur, vide) et une ambiance nocturne calme, cohérente avec le moment d'usage, au réveil et souvent au lit.</p>
+  <table>
+    <thead><tr><th style="width:24%">Principe</th><th>Traduction dans l'interface</th><th style="width:22%">Source</th></tr></thead>
+    <tbody>
+      <tr><td><b>Un geste, tout de suite</b></td><td>Le bouton micro occupe le centre de l'accueil ; aucun formulaire avant l'enregistrement.</td><td>Léa, journey map (étape « Raconte »)</td></tr>
+      <tr><td><b>Toujours savoir où l'on en est</b></td><td>Frise des étapes en direct, durée annoncée, page que l'on peut quitter sans rien perdre.</td><td>Point bas de la journey map (attente)</td></tr>
+      <tr><td><b>Corriger plutôt que subir</b></td><td>Texte et ambiance modifiables sur la page du résultat ; mention « ce n'est pas un diagnostic ».</td><td>Interviews, éthique IA</td></tr>
+      <tr><td><b>Données sous contrôle</b></td><td>Consentement explicite, export et suppression accessibles depuis le compte, en deux clics.</td><td>Karim, RGPD</td></tr>
+      <tr><td><b>Accessible et sobre</b></td><td>Contrastes WCAG AA, navigation au clavier, animations désactivées si <code>prefers-reduced-motion</code>.</td><td>KAN-26</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Palette</h3>
+  <div class="swatches">
+    <div class="sw"><i style="background:#070718"></i><div><b>Nuit</b>#070718 · fond</div></div>
+    <div class="sw"><i style="background:#ece9ff"></i><div><b>Encre</b>#ECE9FF · texte</div></div>
+    <div class="sw"><i style="background:#a78bfa"></i><div><b>Violet</b>#A78BFA · accent</div></div>
+    <div class="sw"><i style="background:#f472b6"></i><div><b>Rose</b>#F472B6 · accent</div></div>
+    <div class="sw"><i style="background:#67e8f9"></i><div><b>Cyan</b>#67E8F9 · aurore</div></div>
+    <div class="sw"><i style="background:#a7a3c9"></i><div><b>Brume</b>#A7A3C9 · secondaire</div></div>
+  </div>
+  <h3>Couleurs des émotions (identiques dans l'interface, les graphiques et les images de secours)</h3>
+  <div class="emo">
+    <div style="background:#fbbf24;color:#422006">😊 Heureux · #FBBF24</div>
+    <div style="background:#f43f5e">😰 Stressant · #F43F5E</div>
+    <div style="background:#60a5fa;color:#0b2447">😢 Triste · #60A5FA</div>
+    <div style="background:#c084fc">🌀 Étrange · #C084FC</div>
+    <div style="background:#94a3b8;color:#0f172a">😐 Neutre · #94A3B8</div>
+  </div>
+  <div class="type">
+    <div class="card"><b style="font-family:Fraunces;font-size:15pt">Fraunces</b><br>Titres et chiffres clés : une serif douce, « littéraire », qui évoque le carnet de rêves. Poids 600 à 700.</div>
+    <div class="card"><b style="font-size:13pt">Inter</b><br>Texte, formulaires, libellés : lisible en petite taille sur mobile, chiffres tabulaires pour les indicateurs. Poids 400 à 600.</div>
+  </div>
+  <h3>Composants de base</h3>
+  <div class="demo-ui">
+    <span class="btn-p">✨ Donner vie à mon rêve</span>
+    <span class="btn-s">🎲 Rêve d'exemple</span>
+    <span class="badge">😊 Heureux</span>
+    <span class="glass">Carte « verre dépoli » : fond translucide, contour violet à 18 %, coins de 22 px</span>
+  </div>
+  <p style="margin-top:2mm;font-size:8pt;color:#64748b">Un seul bouton principal (dégradé) par écran ; les actions secondaires sont des boutons en contour. Les contrastes texte/fond dépassent 7:1 sur le fond Nuit. La charte est déjà appliquée et testée dans la maquette (<code>maquette/theme.py</code>).</p>
+
+  <h2><span class="num">2</span>Parcours utilisateur</h2>
+  <figure>{{flow}}<figcaption>Figure 1 – Parcours principal (violet) et branches : consentement, compte, erreurs (rose), corrections. Les numéros renvoient aux écrans ci-après.</figcaption></figure>
+</section>
+
+<section class="page">
+  <h2><span class="num">3</span>Wireframes · compte, raconter, suivi</h2>
+  <div class="screen">
+    <figure>{{signup}}</figure>
+    <div><h3>Écran 2 · Inscription</h3><div class="meta">KAN-13 · KAN-36 · US-01</div><ol>
+      <li>Consentement IA <b>distinct et non pré-coché</b>, avec mention des prestataires et du transfert hors UE ; sans lui, l'enregistrement reste désactivé.</li>
+      <li>Règles du mot de passe annoncées avant la saisie, indicateur de robustesse.</li>
+      <li>Erreurs affichées sous le champ concerné ; la saisie est conservée ; tentatives limitées.</li>
+    </ol></div>
+  </div>
+  <div class="screen">
+    <figure>{{record}}</figure>
+    <div><h3>Écran 3 · Raconter</h3><div class="meta">KAN-17 · US-04, US-05</div><ol>
+      <li>Bouton micro central, minuteur et onde sonore pendant l'enregistrement ; un seul appui pour terminer.</li>
+      <li>Import de secours par glisser-déposer, avec les limites annoncées (25 Mo, 10 min).</li>
+      <li>Quota du jour toujours visible (5 rêves) : pas de surprise au moment d'envoyer.</li>
+      <li>Aide contextuelle si le navigateur refuse le micro (risque R8).</li>
+    </ol></div>
+  </div>
+  <div class="screen">
+    <figure>{{progress}}</figure>
+    <div><h3>Écran 5 · Suivi du traitement</h3><div class="meta">KAN-22 · US-06</div><ol>
+      <li>Frise des 4 étapes mise à jour toutes les 2 s (HTMX) ; l'étape en cours est mise en avant.</li>
+      <li>Le texte transcrit apparaît dès qu'il est disponible, avant l'image : l'attente se remplit.</li>
+      <li>État « échec » : message clair, bouton <b>Réessayer</b> qui reprend à l'étape échouée, sans refacturer.</li>
+    </ol></div>
+  </div>
+</section>
+
+<section class="page">
+  <h2><span class="num">4</span>Wireframes · résultat, historique, tableau de bord</h2>
+  <div class="screen">
+    <figure>{{result}}</figure>
+    <div><h3>Écran 6 · Résultat</h3><div class="meta">KAN-18, 19, 20 · US-07 à US-09</div><ol>
+      <li>Image dominante, avec la mention « générée par IA » (transparence).</li>
+      <li>Ambiance retenue en badge, puis la distribution des probabilités.</li>
+      <li>Transcription éditable sur place.</li>
+      <li>Correction de l'ambiance et avertissement « pas un diagnostic ».</li>
+      <li>Suppression du rêve à portée de main (US-14), avec confirmation.</li>
+    </ol></div>
+  </div>
+  <div class="screen">
+    <figure>{{history}}</figure>
+    <div><h3>Écran 7 · Historique</h3><div class="meta">KAN-14, KAN-24 · US-12, US-13</div><ol>
+      <li>Filtres période et émotions combinables, reflétés dans l'URL ; bouton de réinitialisation.</li>
+      <li>Cartes : miniature, date, ambiance, extrait ; un clic ouvre le résultat.</li>
+      <li>Pagination (20 par page) ; un état vide explique comment raconter un premier rêve.</li>
+    </ol></div>
+  </div>
+  <div class="screen">
+    <figure>{{dashboard}}</figure>
+    <div><h3>Écran 8 · Tableau de bord</h3><div class="meta">KAN-25 · US-15, US-16</div><ol>
+      <li>Trois indicateurs : volume, ambiance dominante, fréquence.</li>
+      <li>Répartition des émotions et évolution dans le temps, aux couleurs de la charte.</li>
+      <li>Alternative accessible : les mêmes données en tableau.</li>
+    </ol></div>
+  </div>
+</section>
+
+<section class="page">
+  <h2><span class="num">5</span>Wireframes · compte RGPD et mobile</h2>
+  <div class="screen">
+    <figure>{{account}}</figure>
+    <div><h3>Compte</h3><div class="meta">KAN-15 · KAN-36 · KAN-38 · US-03, US-17</div><ol>
+      <li>Consentement IA consultable et révocable, avec sa date et sa version.</li>
+      <li>Export de tous les rêves au format JSON documenté.</li>
+      <li>Zone sensible isolée visuellement.</li>
+      <li>Confirmation renforcée (saisie de « SUPPRIMER ») avant la suppression définitive.</li>
+    </ol></div>
+  </div>
+  <h3>Mobile · persona Léa, au réveil</h3>
+  <div class="mobiles">
+    <figure>{{mobile_record}}<figcaption>Raconter</figcaption></figure>
+    <figure>{{mobile_result}}<figcaption>Résultat</figcaption></figure>
+    <div class="screen" style="display:block"><ol>
+      <li>Le bouton micro occupe le tiers central de l'écran, à portée de pouce ; aucun défilement avant d'enregistrer.</li>
+      <li>Navigation par barre d'onglets en bas d'écran (Raconter, Historique, Tableau de bord, Compte).</li>
+      <li>Sur le résultat, l'image passe en premier, puis l'ambiance et le texte ; les actions restent en bas, en pleine largeur.</li>
+      <li>Responsive dès 360 px de large ; les mêmes gabarits servent au bureau et au mobile (Tailwind).</li>
+    </ol></div>
+  </div>
+
+  <h2><span class="num">6</span>Correspondance écrans ↔ user stories</h2>
+  <table>
+    <thead><tr><th style="width:26%">Écran</th><th style="width:30%">User stories</th><th>Tickets Jira</th></tr></thead>
+    <tbody>
+      <tr><td>2 · Inscription / connexion</td><td>US-01, US-02</td><td>KAN-13, KAN-36, KAN-37</td></tr>
+      <tr><td>3 · Raconter</td><td>US-04, US-05</td><td>KAN-17</td></tr>
+      <tr><td>5 · Suivi du traitement</td><td>US-06</td><td>KAN-22</td></tr>
+      <tr><td>6 · Résultat</td><td>US-07, US-08, US-09, US-14</td><td>KAN-18, KAN-19, KAN-20, KAN-15</td></tr>
+      <tr><td>7 · Historique</td><td>US-12, US-13</td><td>KAN-14, KAN-24</td></tr>
+      <tr><td>8 · Tableau de bord</td><td>US-15, US-16</td><td>KAN-25</td></tr>
+      <tr><td>Compte</td><td>US-03, US-17</td><td>KAN-15, KAN-36, KAN-38</td></tr>
+      <tr><td>Tous (gabarits, états, accessibilité)</td><td>–</td><td>KAN-26</td></tr>
+    </tbody>
+  </table>
+</section>
+
+</body>
+</html>

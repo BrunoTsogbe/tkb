@@ -1,0 +1,19 @@
+<div id="dream-live" data-finished="{{ dream.is_finished|yesno:'1,0' }}"
+     data-status-url="{% url 'dreams:status' dream.id %}" aria-live="polite">
+  <ol class="steps" aria-label="Avancement du traitement">
+    <li class="done">Reçu</li>
+    <li class="{% if dream.status == 'transcribing' %}current{% elif dream.transcript %}done{% elif dream.error_step == 'transcription' %}failed{% endif %}">Transcription</li>
+    <li class="{% if dream.status == 'analyzing' %}current{% elif dream.emotion %}done{% elif dream.error_step == 'emotion' %}failed{% endif %}">Ambiance</li>
+    <li class="{% if dream.status == 'generating' %}current{% elif dream.image_file %}done{% elif dream.error_step == 'image' %}failed{% endif %}">Image</li>
+  </ol>
+  {% if dream.status == 'failed' %}
+    <div class="alert" role="alert">
+      <p>{% if dream.error_code == 'budget_exhausted' %}Le service est momentanément en pause (budget atteint).{% elif dream.error_code == 'invalid_audio' %}L'enregistrement n'a pas pu être lu.{% else %}Le traitement n'a pas abouti (service indisponible).{% endif %}
+      Votre rêve est conservé.</p>
+      <form method="post" action="{% url 'dreams:retry' dream.id %}">{% csrf_token %}<button class="btn btn-primary" type="submit">Réessayer</button></form>
+    </div>
+  {% elif not dream.is_finished %}
+    <p class="muted">Votre rêve prend forme… environ 30 secondes. Vous pouvez quitter la page : il est conservé.</p>
+    {% if dream.transcript %}<p class="transcript-preview">{{ dream.transcript }}</p>{% endif %}
+  {% endif %}
+</div>

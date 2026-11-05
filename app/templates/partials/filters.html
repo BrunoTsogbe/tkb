@@ -1,0 +1,18 @@
+<form method="get" class="card filters" aria-label="Filtres">
+  {% if form.non_field_errors %}<p class="error" role="alert">{{ form.non_field_errors.0 }}</p>{% endif %}
+  <div class="filters-row">
+    <label>Période {{ form.period }}</label>
+    <label>Du {{ form.start }}</label>
+    <label>Au {{ form.end }}</label>
+  </div>
+  <fieldset class="chips">
+    <legend>Ambiance</legend>
+    {% for choice in form.emotion %}
+      <label class="chip-check">{{ choice.tag }} <span>{{ choice.choice_label }}</span></label>
+    {% endfor %}
+  </fieldset>
+  <div class="filters-row">
+    <button class="btn btn-secondary" type="submit">Filtrer</button>
+    {% if form.is_filtered %}<a href="{{ request.path }}">Réinitialiser</a>{% endif %}
+  </div>
+</form>

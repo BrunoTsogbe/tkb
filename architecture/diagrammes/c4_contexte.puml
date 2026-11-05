@@ -1,0 +1,21 @@
+@startuml c4_contexte
+!include <C4/C4_Context>
+title Synthétiseur de rêves – C4 niveau 1 (contexte)
+
+Person(dreamer, "Rêveur", "Raconte ses rêves au réveil, consulte son historique")
+Person(admin, "Administrateur", "Suit coûts, erreurs et quotas")
+System(app, "Synthétiseur de rêves", "Transcrit, classe l'émotion, illustre et archive les rêves")
+System_Ext(openai, "OpenAI API", "gpt-transcribe, GPT Image 1 Mini")
+System_Ext(backup, "STT de secours", "Deepgram / AssemblyAI")
+System_Ext(sentry, "Sentry", "Erreurs et traces")
+System_Ext(hf, "Hugging Face Hub", "Modèle d'émotion (au build)")
+System_Ext(mail, "Service d'e-mail", "SMTP transactionnel")
+
+Rel(dreamer, app, "Raconte, corrige, consulte", "HTTPS")
+Rel(admin, app, "Supervise", "HTTPS, /admin")
+Rel(app, openai, "Audio → texte, prompt → image", "HTTPS/JSON")
+Rel(app, backup, "Audio → texte (bascule)", "HTTPS")
+Rel(app, sentry, "Exceptions sans contenu")
+Rel(app, hf, "Télécharge le modèle")
+Rel(app, mail, "Envoie", "SMTP/TLS")
+@enduml

@@ -1,0 +1,87 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://synthetiseur-de-reves.example/schemas/dream.schema.json",
+  "title": "Rêve stocké",
+  "description": "Représentation JSON d'un rêve (export RGPD US-17, réponse de l'API interne /dreams/{id}/). Aucune donnée d'identification directe : l'utilisateur est désigné par son identifiant.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "user_id", "status", "created_at", "audio", "transcript", "emotion", "image", "processing", "error"],
+  "properties": {
+    "id": {"type": "string", "format": "uuid"},
+    "user_id": {"type": "integer", "minimum": 1},
+    "status": {"enum": ["received", "transcribing", "analyzing", "generating", "done", "failed"]},
+    "created_at": {"type": "string", "format": "date-time"},
+    "audio": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["format", "duration_s", "deleted_at"],
+      "properties": {
+        "format": {"enum": ["wav", "mp3", "webm"]},
+        "duration_s": {"type": ["number", "null"], "minimum": 0, "maximum": 600},
+        "deleted_at": {"type": ["string", "null"], "format": "date-time", "description": "Date de suppression du fichier (minimisation RGPD)."}
+      }
+    },
+    "transcript": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "required": ["text", "language", "model", "edited"],
+      "properties": {
+        "text": {"type": "string", "minLength": 1, "maxLength": 20000},
+        "language": {"type": "string", "pattern": "^[a-z]{2}$"},
+        "model": {"type": "string"},
+        "edited": {"type": "boolean", "description": "Vrai si l'utilisateur a corrigé le texte."}
+      }
+    },
+    "emotion": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "required": ["key", "score", "scores", "model", "corrected_by_user"],
+      "properties": {
+        "key": {"$ref": "#/$defs/emotionKey"},
+        "score": {"type": "number", "minimum": 0, "maximum": 1},
+        "scores": {
+          "type": "object",
+          "propertyNames": {"$ref": "#/$defs/emotionKey"},
+          "additionalProperties": {"type": "number", "minimum": 0, "maximum": 1}
+        },
+        "model": {"type": "string"},
+        "corrected_by_user": {"type": "boolean"}
+      }
+    },
+    "image": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "required": ["url", "model", "size", "is_fallback", "ai_generated"],
+      "properties": {
+        "url": {"type": "string", "format": "uri-reference"},
+        "model": {"type": "string"},
+        "size": {"enum": ["1024x1024", "512x512"]},
+        "is_fallback": {"type": "boolean", "description": "Image de secours (refus de contenu, panne, budget)."},
+        "ai_generated": {"const": true, "description": "Mention de transparence (règlement européen sur l'IA)."}
+      }
+    },
+    "processing": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["duration_ms", "cost_eur", "api_calls"],
+      "properties": {
+        "duration_ms": {"type": ["integer", "null"], "minimum": 0},
+        "cost_eur": {"type": "number", "minimum": 0},
+        "api_calls": {"type": "integer", "minimum": 0}
+      }
+    },
+    "error": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "required": ["code", "step", "retryable"],
+      "properties": {
+        "code": {"enum": ["timeout", "quota_exceeded", "provider_error", "content_refused", "budget_exhausted", "invalid_audio"]},
+        "step": {"enum": ["transcription", "emotion", "image"]},
+        "retryable": {"type": "boolean"}
+      }
+    }
+  },
+  "$defs": {
+    "emotionKey": {"enum": ["heureux", "stressant", "triste", "etrange", "neutre"]}
+  }
+}

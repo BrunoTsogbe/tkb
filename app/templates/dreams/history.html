@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Mes rêves · Synthétiseur de rêves{% endblock %}
+{% block content %}
+<h1>Mes rêves</h1>
+{% include "partials/filters.html" %}
+{% if page.object_list %}
+  <ul class="gallery">
+    {% for dream in page.object_list %}
+      <li class="card dream-card">
+        <a href="{% url 'dreams:detail' dream.id %}">
+          {% if dream.image_file %}
+            <img src="{% url 'dreams:image' dream.id %}" alt="" width="96" height="96" loading="lazy">
+          {% else %}
+            <span class="thumb" aria-hidden="true">🌙</span>
+          {% endif %}
+          <span class="meta">
+            <time datetime="{{ dream.created_at|date:'c' }}">{{ dream.created_at|date:"d/m/Y · H:i" }}</time>
+            {% if dream.emotion %}<span class="chip" style="--accent: {{ dream.emotion.color }}">{{ dream.emotion.icon }} {{ dream.emotion.label }}</span>
+            {% else %}<span class="chip">{{ dream.get_status_display }}</span>{% endif %}
+            <span class="excerpt">{{ dream.transcript|default:"Traitement en cours…"|truncatechars:110 }}</span>
+          </span>
+        </a>
+      </li>
+    {% endfor %}
+  </ul>
+  {% if page.has_other_pages %}
+    <nav class="pagination" aria-label="Pages">
+      {% if page.has_previous %}<a href="?{% if querystring %}{{ querystring }}&amp;{% endif %}page={{ page.previous_page_number }}">‹ Précédente</a>{% endif %}
+      <span>Page {{ page.number }} / {{ page.paginator.num_pages }}</span>
+      {% if page.has_next %}<a href="?{% if querystring %}{{ querystring }}&amp;{% endif %}page={{ page.next_page_number }}">Suivante ›</a>{% endif %}
+    </nav>
+  {% endif %}
+{% else %}
+  <section class="card narrow center">
+    {% if form.is_filtered %}
+      <p>Aucun rêve ne correspond à ces filtres.</p>
+      <a class="btn btn-secondary" href="{% url 'dreams:collection' %}">Réinitialiser les filtres</a>
+    {% else %}
+      <p>Votre ciel est encore vide.</p>
+      <a class="btn btn-primary" href="{% url 'dreams:record' %}">Raconter un premier rêve</a>
+    {% endif %}
+  </section>
+{% endif %}
+{% endblock %}

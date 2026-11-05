@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+<section class="hero">
+  <h1>Racontez votre rêve</h1>
+  <p class="muted">Parlez librement, l'application s'occupe du reste.</p>
+  <p class="chip" aria-live="polite">{{ quota.remaining }} / {{ quota.limit }} rêves possibles aujourd'hui</p>
+</section>
+
+{% include "partials/form_errors.html" %}
+
+{% if not has_consent %}
+  <section class="card narrow">
+    <h2>Avant de commencer</h2>
+    <p>Pour transcrire et illustrer vos rêves, votre voix et le texte de vos rêves sont envoyés à des prestataires d'IA (OpenAI, hors Union européenne). L'enregistrement est supprimé dès la transcription.</p>
+    <form method="post" action="{% url 'accounts:consent' %}">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="give">
+      <input type="hidden" name="next" value="{% url 'dreams:record' %}">
+      <button class="btn btn-primary" type="submit">J'accepte et je commence</button>
+    </form>
+  </section>
+{% elif quota.exhausted %}
+  <section class="card narrow center"><p>Vous avez atteint votre limite de rêves pour aujourd'hui. Revenez demain !</p></section>
+{% else %}
+  <section class="card recorder" data-recorder data-upload-url="{% url 'dreams:collection' %}">
+    <button type="button" class="mic" data-mic aria-pressed="false" aria-label="Commencer l'enregistrement">
+      <span aria-hidden="true">🎙️</span>
+    </button>
+    <p class="timer" data-timer aria-live="polite">Appuyez pour commencer</p>
+    <p class="error" data-recorder-error role="alert" hidden></p>
+    <p class="help" data-mic-help hidden>Micro indisponible ou refusé : autorisez-le dans votre navigateur, ou importez un fichier ci-dessous.</p>
+  </section>
+
+  <p class="center muted">ou</p>
+
+  <form class="card narrow" method="post" action="{% url 'dreams:collection' %}" enctype="multipart/form-data">
+    {% csrf_token %}
+    <div class="field{% if form.audio.errors %} has-error{% endif %}">
+      <label for="id_audio">Importer un fichier .wav, .mp3 ou .webm (25 Mo, 10 minutes maximum)</label>
+      <input type="file" name="audio" id="id_audio" accept=".wav,.mp3,.webm,audio/*" required>
+      {% for error in form.audio.errors %}<p class="error" role="alert">{{ error }}</p>{% endfor %}
+    </div>
+    <button class="btn btn-secondary" type="submit">Envoyer le fichier</button>
+  </form>
+{% endif %}
+{% endblock %}
+{% block scripts %}<script src="{% static 'js/recorder.js' %}" defer></script>{% endblock %}

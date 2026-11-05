@@ -1,0 +1,19 @@
+# Dépendances d'exécution de l'application (production et worker)
+Django>=5.2,<5.3
+django-environ>=0.11
+argon2-cffi>=23.1
+psycopg[binary]>=3.2
+celery>=5.4,<6
+redis>=5.0
+packaging>=24.0  # requis par le transport Redis de kombu (Celery)
+whitenoise>=6.7
+django-ratelimit>=4.1
+gunicorn>=23.0
+Pillow>=10.4
+httpx>=0.27
+sentry-sdk[django,celery]>=2.10
+django-storages[s3]>=1.14
+
+# Optionnel : modèle d émotion Hugging Face (AI_EMOTION_PROVIDER=huggingface)
+# transformers>=4.44
+# torch>=2.4

@@ -1,0 +1,38 @@
+{% load static %}<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Synthétiseur de rêves{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+</head>
+<body>
+  <a class="skip" href="#contenu">Aller au contenu</a>
+  <header class="topbar">
+    <a class="brand" href="{% url 'dreams:record' %}"><span class="moon" aria-hidden="true"></span>Synthétiseur de rêves</a>
+    <nav aria-label="Navigation principale">
+      {% if user.is_authenticated %}
+        <a href="{% url 'dreams:record' %}" {% if request.resolver_match.url_name == 'record' %}aria-current="page"{% endif %}>Raconter</a>
+        <a href="{% url 'dreams:collection' %}" {% if request.resolver_match.url_name in 'collection detail' %}aria-current="page"{% endif %}>Historique</a>
+        <a href="{% url 'dashboard:index' %}" {% if request.resolver_match.app_name == 'dashboard' %}aria-current="page"{% endif %}>Tableau de bord</a>
+        {% if user.is_staff %}<a href="{% url 'supervision' %}">Supervision</a>{% endif %}
+        <a href="{% url 'accounts:account' %}" {% if request.resolver_match.url_name == 'account' %}aria-current="page"{% endif %}>Compte</a>
+        <form method="post" action="{% url 'accounts:logout' %}" class="inline">{% csrf_token %}<button class="link">Se déconnecter</button></form>
+      {% else %}
+        <a href="{% url 'accounts:login' %}">Se connecter</a>
+        <a class="btn btn-secondary" href="{% url 'accounts:signup' %}">Créer un compte</a>
+      {% endif %}
+    </nav>
+  </header>
+  <main id="contenu" class="container">
+    {% if messages %}
+      <ul class="messages" role="status">
+        {% for message in messages %}<li class="msg msg-{{ message.tags }}">{{ message }}</li>{% endfor %}
+      </ul>
+    {% endif %}
+    {% block content %}{% endblock %}
+  </main>
+  <footer class="footer">L'ambiance décrit le texte du rêve, ce n'est pas un diagnostic · Images générées par IA</footer>
+  {% block scripts %}{% endblock %}
+</body>
+</html>
