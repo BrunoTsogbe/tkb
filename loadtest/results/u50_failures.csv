@@ -1,2 +1,1 @@
 Method,Name,Error,Occurrences,First Seen,Last Seen
-POST,connexion,CatchResponseError('connexion refusée : relever LOGIN_RATE pour le test de charge'),3,2026-11-05T11:54:36Z,2026-11-05T11:54:38Z

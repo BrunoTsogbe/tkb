@@ -19,7 +19,7 @@ RUN pip install --no-index --find-links=/wheels /wheels/* && rm -rf /wheels
 COPY --chown=app:app app/ /app/
 COPY --chown=app:app architecture/dream.schema.json /architecture/dream.schema.json
 RUN DJANGO_SECRET_KEY=build-only python manage.py collectstatic --noinput \
-    && mkdir -p /app/media && chown -R app:app /app/media /app/staticfiles
+    && mkdir -p /app/media && chown app:app /app && chown -R app:app /app/media /app/staticfiles
 USER app
 EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
