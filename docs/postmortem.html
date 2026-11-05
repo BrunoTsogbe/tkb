@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><title>Synthétiseur de rêves – Post-mortem</title>
+<style>
+@page { size: A4; margin: 14mm 16mm 16mm; }
+@page { @bottom-left { content: "Synthétiseur de rêves – Post-mortem individuel – Bruno Tsogbe"; font: 7pt "DejaVu Sans", Verdana, sans-serif; color: #666; }
+        @bottom-right { content: counter(page) " / " counter(pages); font: 7pt "DejaVu Sans", Verdana, sans-serif; color: #666; } }
+html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+body { margin: 0; font: 8.4pt/1.42 "DejaVu Sans", Verdana, sans-serif; color: #222; }
+h1 { color: #1f3864; font-size: 15pt; margin: 0 0 1mm; }
+h2 { color: #1f3864; font-size: 11pt; margin: 4.5mm 0 1.5mm; break-after: avoid; }
+p { margin: 0 0 1.8mm; } ul { margin: 0 0 1.8mm; padding-left: 4.5mm; } li { margin-bottom: .6mm; }
+.meta { color: #555; margin-bottom: 3mm; }
+table { width: 100%; border-collapse: collapse; margin: 1mm 0 2mm; }
+th { background: #1f3864; color: #fff; text-align: left; padding: 1mm 1.6mm; }
+td { padding: .9mm 1.6mm; border-bottom: 1px solid #d0d7e2; vertical-align: top; }
+tr { break-inside: avoid; } tr:nth-child(even) td { background: #f2f5fa; }
+/* Encadrés à remplacer par le texte de l'auteur, puis à supprimer. */
+.todo { border: 1.5px dashed #b45309; background: #fff7ed; padding: 2mm 3mm; margin: 2mm 0; color: #7c2d12; }
+.todo b { color: #b45309; }
+</style></head><body>
+<h1>Post-mortem individuel</h1>
+<p class="meta">Projet « Synthétiseur de rêves » · Bloc 3 – Production · Bruno Tsogbe · Ticket KAN-32 · novembre 2026</p>
+
+<h2>1. Auto-évaluation et travail d'équipe</h2>
+<div class="todo"><b>À rédiger par l'auteur</b> (une demi-page, à la première personne). Pistes :
+<ul>
+<li>Quel était ton objectif personnel sur ce projet, et l'as-tu atteint ?</li>
+<li>Quelle note te donnerais-tu sur chaque axe de la grille (fonctionnalités, code, IA, tests, CI/CD, performance, documentation), et pourquoi ?</li>
+<li>Projet réalisé seul : comment t'es-tu organisé (sprints, Jira, revue de tes propres PR) ? Qu'est-ce qui t'a manqué sans équipe ? Si tu as utilisé un assistant d'IA pour coder, dis-le et explique comment tu as relu et validé son travail.</li>
+<li>Le moment le plus difficile, et comment tu l'as surmonté.</li>
+</ul></div>
+
+<h2>2. Points forts et points faibles de la production</h2>
+<table>
+<thead><tr><th style="width:50%">Points forts (vérifiés)</th><th>Points faibles (constatés)</th></tr></thead>
+<tbody>
+<tr><td>Pipeline idempotent et reprenable : un échec reprend à l'étape fautive sans refacturer les précédentes.</td><td>Aucun appel réel aux APIs d'IA à ce jour : latences et qualité réelles non mesurées (KAN-39).</td></tr>
+<tr><td>Politique d'appel commune : délais, relances, <code>Retry-After</code>, coupe-circuit, journal des coûts, budget à trois seuils.</td><td>CI et déploiement écrits mais jamais exécutés sur GitHub ; Render non configuré.</td></tr>
+<tr><td>115 tests de l'application, 98 % de couverture de <code>app/</code>, APIs simulées par <code>httpx.MockTransport</code>.</td><td>Quatre bugs d'assemblage découverts tard, sur Docker, alors que tous les tests passaient.</td></tr>
+<tr><td>Pile Docker validée de bout en bout ; 50 utilisateurs simultanés, 0 échec, p95 des pages ≤ 190 ms.</td><td>Modèle Hugging Face implémenté mais jamais exécuté ; bonus voix et vidéo non réalisé.</td></tr>
+<tr><td>RGPD intégré dès la conception : consentement, export, effacement, audio supprimé, analyse d'impact.</td><td>PR ouvertes en fin de projet plutôt qu'au fil de l'eau ; wireframes réalisés hors Figma.</td></tr>
+</tbody></table>
+<div class="todo"><b>À compléter par l'auteur</b> : le point fort dont tu es le plus fier, et le point faible qui t'a le plus coûté.</div>
+
+<h2>3. Ce que je referais autrement</h2>
+<ul>
+<li><b>Monter la pile Docker dès le sprint 1</b> et y lancer le test de fumée à chaque PR : les quatre bugs d'assemblage auraient été vus des semaines plus tôt.</li>
+<li><b>Faire un premier appel réel aux APIs au début</b> (moins de 0,50 €), pour valider formats, latences et coûts avant de construire autour.</li>
+<li><b>Ouvrir une PR par ticket et faire tourner la CI en continu</b>, au lieu de grouper les tickets par branche de sprint.</li>
+<li><b>Relances via Celery</b> (<code>self.retry(countdown=…)</code>) plutôt qu'une attente dans le worker, qui le bloque jusqu'à 30 s.</li>
+<li><b>Lancer le test de fumée après chaque déploiement</b>, pas seulement <code>/healthz/</code>.</li>
+</ul>
+<div class="todo"><b>À compléter par l'auteur</b> : ce que tu changerais dans ta propre organisation (temps, priorités, demande d'aide).</div>
+
+<h2>4. Maîtrise des outils</h2>
+<table>
+<thead><tr><th style="width:24%">Outil</th><th>Utilisation dans le projet</th><th style="width:20%">Niveau ressenti</th></tr></thead>
+<tbody>
+<tr><td>Django 5.2, PostgreSQL</td><td>Apps séparées, modèles, QuerySets filtrés par propriétaire, migrations, authentification par e-mail</td><td class="lvl"></td></tr>
+<tr><td>Celery, Redis</td><td>Worker, envoi après commit, verrou de traitement, cache du budget</td><td class="lvl"></td></tr>
+<tr><td>APIs d'IA (OpenAI, Hugging Face)</td><td>Interfaces interchangeables, clients HTTP avec httpx, gestion des erreurs et des coûts</td><td class="lvl"></td></tr>
+<tr><td>pytest, factory_boy, Locust</td><td>Tests unitaires et d'intégration, simulation HTTP, test de charge à trois paliers</td><td class="lvl"></td></tr>
+<tr><td>Docker, GitHub Actions, Render</td><td>Image multi-étapes non root, Compose à quatre services, workflows CI et déploiement</td><td class="lvl"></td></tr>
+<tr><td>ruff, mypy, Sentry</td><td>Lint (PEP 8, docstrings Google), typage strict, logs JSON et suivi des erreurs</td><td class="lvl"></td></tr>
+<tr><td>Jira, Git</td><td>68 tickets, épics et sprints ; branches par lot et commits référencés</td><td class="lvl"></td></tr>
+</tbody></table>
+<div class="todo"><b>À remplir par l'auteur</b> : la colonne « Niveau ressenti » (débutant, à l'aise, maîtrise), et l'outil que tu as le plus appris à utiliser.</div>
+</body></html>

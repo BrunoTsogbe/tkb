@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><title>Synthétiseur de rêves – Analyse d'impact (AIPD)</title>
+<style>
+@page { size: A4; margin: 13mm 15mm 15mm; }
+@page { @bottom-left { content: "Synthétiseur de rêves – Analyse d'impact relative à la protection des données (version allégée)"; font: 7pt "DejaVu Sans", Verdana, sans-serif; color: #666; }
+        @bottom-right { content: counter(page) " / " counter(pages); font: 7pt "DejaVu Sans", Verdana, sans-serif; color: #666; } }
+html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+body { margin: 0; font: 7.8pt/1.38 "DejaVu Sans", Verdana, sans-serif; color: #222; }
+h1 { color: #1f3864; font-size: 15pt; margin: 0 0 1mm; }
+h2 { color: #1f3864; font-size: 11pt; margin: 4mm 0 1.5mm; break-after: avoid; }
+p { margin: 0 0 1.6mm; } ul { margin: 0 0 1.6mm; padding-left: 4.5mm; }
+.meta { color: #555; margin-bottom: 3mm; }
+table { width: 100%; border-collapse: collapse; margin: 1mm 0 2mm; }
+th { background: #1f3864; color: #fff; text-align: left; padding: 1mm 1.6mm; }
+td { padding: .9mm 1.6mm; border-bottom: 1px solid #d0d7e2; vertical-align: top; }
+tr { break-inside: avoid; } tr:nth-child(even) td { background: #f2f5fa; }
+.g1 { color: #1b7a3a; font-weight: 700; } .g2 { color: #b45309; font-weight: 700; } .g3 { color: #b91c1c; font-weight: 700; }
+.box { border-left: 3px solid #1f3864; background: #f2f5fa; padding: 2mm 3mm; margin: 2mm 0; }
+</style></head><body>
+<h1>Analyse d'impact relative à la protection des données (AIPD) – version allégée</h1>
+<p class="meta">Traitement : application « Synthétiseur de rêves » · Responsable : Bruno Tsogbe · Version 1.0 du 5 novembre 2026 · Méthode : CNIL (PIA) simplifiée · Ticket KAN-40 · Référence : dossier de cadrage §5</p>
+
+<div class="box"><b>Pourquoi une AIPD ?</b> Le récit d'un rêve peut révéler des informations sur la santé, la vie affective ou les opinions (catégories particulières, art. 9 RGPD) ; il est traité par l'IA et transmis à un prestataire hors Union européenne. Deux critères de la liste du CEPD sont réunis (données sensibles ou très personnelles, usage innovant de technologies) : l'analyse est recommandée.</div>
+
+<h2>1. Description du traitement</h2>
+<table>
+<thead><tr><th style="width:22%">Élément</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td>Finalités</td><td>Transcrire un rêve raconté à l'oral, en déduire une ambiance, l'illustrer, l'archiver dans un espace personnel et en afficher les statistiques. Aucune finalité publicitaire, aucun profilage à des fins de décision, aucun diagnostic.</td></tr>
+<tr><td>Personnes concernées</td><td>Utilisateurs majeurs inscrits. Les tiers éventuellement cités dans un rêve (prénoms, lieux).</td></tr>
+<tr><td>Données</td><td>Compte : e-mail, mot de passe haché (Argon2), date d'inscription, consentement (date, version). Rêve : enregistrement audio (temporaire), texte, ambiance et probabilités, image générée, prompt envoyé, dates. Technique : journal des appels API (sans contenu), journaux applicatifs (identifiants, durées, codes).</td></tr>
+<tr><td>Destinataires</td><td>L'utilisateur seul pour ses rêves. Sous-traitants : OpenAI (transcription, image ; États-Unis), hébergeur (Render, région Francfort), stockage S3 compatible, Sentry (erreurs, sans contenu de rêve), service d'e-mail transactionnel.</td></tr>
+<tr><td>Durées de conservation</td><td>Audio : supprimé dès la transcription réussie (horodatage <code>audio_deleted_at</code>). Rêves, images, compte : jusqu'à suppression par l'utilisateur. Journal des coûts : conservé sans lien avec la personne après suppression du compte (<code>user_id</code> mis à NULL).</td></tr>
+<tr><td>Supports</td><td>PostgreSQL, stockage des médias (volume ou S3, objets privés), Redis (file de tâches, sans contenu de rêve).</td></tr>
+</tbody></table>
+
+<h2>2. Nécessité et proportionnalité</h2>
+<table>
+<thead><tr><th style="width:22%">Principe</th><th>Mesure dans l'application</th><th style="width:15%">État</th></tr></thead>
+<tbody>
+<tr><td>Base légale</td><td>Consentement explicite (art. 6.1.a et 9.2.a) : case distincte, non pré-cochée, mentionnant OpenAI et le transfert hors UE ; sans lui, l'enregistrement est désactivé. Retrait possible à tout moment depuis « Mon compte ».</td><td class="g1">En place</td></tr>
+<tr><td>Minimisation</td><td>Audio supprimé après transcription ; prompt d'image sans noms propres, e-mails ni numéros ; aucune donnée d'identité au-delà de l'e-mail ; noms de fichiers aléatoires.</td><td class="g1">En place</td></tr>
+<tr><td>Exactitude</td><td>Transcription et ambiance corrigeables par l'utilisateur ; mention « ce n'est pas un diagnostic ».</td><td class="g1">En place</td></tr>
+<tr><td>Droits des personnes</td><td>Accès et portabilité : export JSON complet. Rectification : corrections dans l'application. Effacement : suppression d'un rêve ou du compte (fichiers compris). Retrait du consentement.</td><td class="g1">En place</td></tr>
+<tr><td>Information</td><td>Texte du consentement à l'inscription et dans « Mon compte » ; mention « image générée par IA ».</td><td class="g2">Politique de confidentialité à rédiger</td></tr>
+<tr><td>Sous-traitance (art. 28)</td><td>Contrats de sous-traitance des prestataires à vérifier et accepter : OpenAI (DPA, non-utilisation des données API pour l'entraînement), Render, stockage S3, Sentry.</td><td class="g2">À confirmer (KAN-39)</td></tr>
+<tr><td>Transferts hors UE</td><td>OpenAI : cadre de transfert (clauses contractuelles types ou équivalent) à vérifier ; région UE si proposée. Hébergement et base en région Francfort ; Sentry en région UE.</td><td class="g2">À confirmer</td></tr>
+</tbody></table>
+
+<h2 style="break-before: page">3. Risques pour les personnes</h2>
+<p>Gravité et vraisemblance sur 4 niveaux (1 négligeable, 2 limitée, 3 importante, 4 maximale), évaluées <b>après</b> les mesures en place.</p>
+<table>
+<thead><tr><th style="width:17%">Risque</th><th style="width:22%">Sources et menaces</th><th>Mesures en place</th><th style="width:8%">Gravité</th><th style="width:9%">Vraisemb.</th></tr></thead>
+<tbody>
+<tr><td><b>Accès illégitime</b> aux rêves</td><td>Autre utilisateur, attaquant (vol de mot de passe, injection), fuite chez un prestataire, logs</td><td>Filtrage systématique par propriétaire (rêve d'autrui : 404, testé) ; images servies par l'application, jamais en URL publique ; Argon2, limitation des tentatives, cookies sécurisés, HTTPS/HSTS, CSRF ; logs et Sentry sans contenu ; secrets hors du dépôt ; audit des dépendances en CI</td><td class="g2">3</td><td class="g1">1</td></tr>
+<tr><td><b>Modification non désirée</b></td><td>Erreur de l'IA présentée comme un fait, modification par un tiers</td><td>Corrections tracées (<code>transcript_edited</code>, <code>emotion_corrected</code>) ; mention « pas un diagnostic » ; actions par POST protégé (CSRF)</td><td class="g1">2</td><td class="g1">1</td></tr>
+<tr><td><b>Disparition</b> des données</td><td>Panne, erreur de déploiement, suppression accidentelle</td><td>Base managée avec sauvegardes (Render) ; migrations vérifiées en CI ; confirmation renforcée avant suppression du compte ; export JSON à disposition</td><td class="g1">2</td><td class="g1">1</td></tr>
+<tr><td><b>Réutilisation</b> par un prestataire</td><td>Entraînement de modèles sur les rêves, conservation chez OpenAI</td><td>Minimisation (audio seulement le temps de la transcription, prompt nettoyé) ; vérification du DPA et de l'option de non-entraînement prévue</td><td class="g2">3</td><td class="g2">2</td></tr>
+</tbody></table>
+
+<h2>4. Plan d'action et conclusion</h2>
+<table>
+<thead><tr><th style="width:52%">Action</th><th style="width:26%">Échéance</th><th>Ticket</th></tr></thead>
+<tbody>
+<tr><td>Vérifier et accepter les DPA (OpenAI, Render, stockage, Sentry) ; confirmer le non-entraînement et le cadre de transfert</td><td>Avant la mise en production</td><td>KAN-39</td></tr>
+<tr><td>Rédiger la politique de confidentialité (finalités, durées, droits, sous-traitants, transferts)</td><td>Avant la mise en production</td><td>KAN-30</td></tr>
+<tr><td>Activer le chiffrement côté serveur du stockage S3 et vérifier la politique de sauvegarde de la base</td><td>Au déploiement Render</td><td>KAN-11</td></tr>
+<tr><td>Revoir cette analyse à chaque changement de fournisseur ou de modèle d'IA</td><td>Continu</td><td>–</td></tr>
+</tbody></table>
+<div class="box"><b>Conclusion.</b> Les risques résiduels sont jugés <b>acceptables</b> sous réserve des actions ci-dessus, en particulier la vérification des contrats de sous-traitance et du cadre de transfert vers OpenAI avant toute mise en production avec de vrais utilisateurs. Le principal risque restant, la réutilisation des données par un prestataire, est réduit par la minimisation mais dépend des engagements contractuels du fournisseur.</div>
+</body></html>

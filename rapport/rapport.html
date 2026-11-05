@@ -11,9 +11,9 @@
 @page :first { @bottom-left { content: none; } @bottom-right { content: none; } }
 * { box-sizing: border-box; }
 html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-body { margin: 0; font: 8.9pt/1.45 Inter, "Segoe UI", sans-serif; color: #0f172a; }
+body { margin: 0; font: 8.9pt/1.42 Inter, "Segoe UI", sans-serif; color: #0f172a; }
 h1, h2, h3 { font-family: Fraunces, Georgia, serif; margin: 0; }
-h2 { font-size: 15.5pt; margin: 5mm 0 2mm; break-after: avoid; } h2 .num { color: #7c3aed; margin-right: 2mm; }
+h2 { font-size: 15.5pt; margin: 4mm 0 2mm; break-after: avoid; } h2 .num { color: #7c3aed; margin-right: 2mm; }
 h3 { font-size: 10.8pt; margin: 3.2mm 0 1.4mm; color: #3b0764; break-after: avoid; }
 p { margin: 0 0 2mm; } ul { margin: 0 0 2mm; padding-left: 4.5mm; } li { margin: .5mm 0; }
 code { font: 7.8pt "JetBrains Mono", Consolas, monospace; background: #f1f5f9; padding: .2mm 1mm; border-radius: 1mm; }
@@ -91,7 +91,7 @@ figcaption { font-size: 7.8pt; color: #64748b; text-align: center; margin-top: 1
       <tr><td>Micro-vidéo + ambiance sonore (bonus)</td><td>Non réalisé (backlog KAN-35, Could)</td><td><span class="tag todo">reporté</span></td></tr>
     </tbody>
   </table>
-  <div class="callout warn"><b>Limite connue.</b> Toutes les briques d'IA ont été développées et testées avec des fournisseurs simulés (mode démonstration gratuit, activé par défaut). Les premiers appels réels à OpenAI, la mesure des latences et l'évaluation du modèle Hugging Face sont planifiés dans le spike KAN-39, qui nécessite la clé API du projet (coût estimé &lt; 0,50 €).</div>
+  <div class="callout warn"><b>Limite connue.</b> Toutes les briques d'IA ont été développées et testées avec des fournisseurs simulés (mode démonstration gratuit, activé par défaut). Les premiers appels réels à OpenAI, la mesure des latences et l'évaluation du modèle Hugging Face sont planifiés dans le spike KAN-39, qui nécessite la clé API du projet (coût estimé &lt; 0,50 €). Suivront le déploiement Render, la première exécution de la CI sur GitHub et les actions de l'analyse d'impact RGPD avant mise en production (contrats de sous-traitance, politique de confidentialité).</div>
 
   <h2><span class="num">1</span>Architecture finale mise à jour</h2>
   <p class="lead">L'architecture cible du dossier de spécifications est conservée : un monolithe Django modulaire (apps <code>accounts</code>, <code>dreams</code>, <code>ai</code>, <code>dashboard</code>, <code>core</code>) et un worker Celery qui exécute le traitement des rêves. Une seule image Docker sert aux deux processus.</p>
@@ -212,19 +212,13 @@ figcaption { font-size: 7.8pt; color: #64748b; text-align: center; margin-top: 1
       <tr><td>1</td><td>KAN-7 à KAN-10 (socle, Docker, CI), KAN-13 (comptes), KAN-16 (modèles), KAN-17 (audio), KAN-36 (consentement)</td><td><code>feat/KAN-7-socle-sprint-1</code></td></tr>
       <tr><td>2</td><td>KAN-14 (historique), KAN-18 à KAN-21 (pipeline IA), avance sur KAN-22 et KAN-23</td><td><code>feat/KAN-21-pipeline-ia</code></td></tr>
       <tr><td>3</td><td>KAN-11 (CD), KAN-12 (monitoring), KAN-15 (RGPD), KAN-24, KAN-25 (tableau de bord), KAN-37, KAN-38</td><td><code>feat/KAN-25-dashboard</code></td></tr>
-      <tr><td>4</td><td>KAN-29 (charge), validation Docker, rapport ; à venir : KAN-31 à KAN-34, KAN-39, KAN-40</td><td><code>feat/KAN-29-test-charge</code></td></tr>
+      <tr><td>4</td><td>KAN-29 (charge), validation Docker, KAN-31 (rapport), KAN-40 (AIPD), KAN-33 (revue) ; à venir : KAN-32, KAN-39</td><td><code>feat/KAN-29-test-charge</code></td></tr>
     </tbody>
   </table>
   <ul>
     <li><b>Dépôt GitHub</b> : github.com/BrunoTsogbe/tkb (privé, accès à ouvrir au jury). Une branche par lot de tickets, PR avec checklist d'auto-revue, <code>main</code> protégée.</li>
     <li><b>Suivi Jira</b> : projet KAN (bruno-tsogbe.atlassian.net), 6 épics, 34 tâches, 28 sous-tâches ; chaque tâche porte une priorité, des critères d'acceptation et une définition de « terminé ».</li>
-    <li><b>Documentation</b> : <code>README.md</code> (installation), <code>CONTRIBUTING.md</code> (règles), <code>CONFORMITE.md</code> (correspondance avec le sujet), <code>loadtest/README.md</code> (charge).</li>
-  </ul>
-  <h3>Prochaines étapes</h3>
-  <ul>
-    <li>KAN-39 : premiers appels réels, mesure des latences, évaluation du modèle Hugging Face sur 20 textes annotés.</li>
-    <li>Déploiement Render (blueprint prêt) et première exécution de la CI sur GitHub.</li>
-    <li>KAN-40 : analyse d'impact RGPD allégée ; bonus voix et micro-vidéo si le budget le permet.</li>
+    <li><b>Documentation</b> : <code>README.md</code> (installation), <code>CONTRIBUTING.md</code> (règles), <code>CONFORMITE.md</code> (correspondance avec le sujet), <code>loadtest/README.md</code> (charge), <code>aipd_synthetiseur.pdf</code> (analyse d'impact RGPD).</li>
   </ul>
 </section>
 </body>
